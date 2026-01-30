@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlowPrompt - AI Video Prompt Generator</title>
+    <meta name="description"
+        content="Create professional AI video prompts for Google Flow & Veo. Generate stunning videos instantly.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Background -->
+    <div class="bg-animation">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <rect width="32" height="32" rx="8" fill="url(#navLogoGrad)" />
+                    <path d="M10 16L14 12V14.5H22V17.5H14V20L10 16Z" fill="white" />
+                    <defs>
+                        <linearGradient id="navLogoGrad" x1="0" y1="0" x2="32" y2="32">
+                            <stop offset="0%" stop-color="#8B5CF6" />
+                            <stop offset="100%" stop-color="#EC4899" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <span>FlowPrompt by Mang Hendar WA: 085724875555</span>
+                <span style="font-size: 12px; opacity: 0.7; margin-left: 8px;"></span>
+            </div>
+            <div class="nav-links">
+                <a href="#generator" class="nav-link">Generator</a>
+            </div>
+            <div class="nav-actions">
+                <div class="language-switcher">
+                    <button class="lang-btn active" data-lang="en">EN</button>
+                    <button class="lang-btn" data-lang="id">ID</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="badge-dot"></span>
+                Powered by Google Flow & Veo AI
+            </div>
+            <h1>Create Prompts <span class="gradient-text">Instantly</span></h1>
+            <p class="hero-subtitle">
+                Generate professional, consistent prompts for Google Flow AI Video.<br>
+                Perfect character consistency in every scene.
+            </p>
+            <div class="hero-buttons">
+                <a href="#generator" class="btn-primary">
+                    <span>🚀</span> Start Creating Free
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <div class="stat-number">10+</div>
+                    <div class="stat-label">Scene Types</div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">Free to Use</div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <div class="stat-number">∞</div>
+                    <div class="stat-label">Unlimited</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Generator Section -->
+    <section id="generator" class="generator-section">
+        <div class="generator-container">
+            <div class="generator-header">
+                <h2>Prompt Generator</h2>
+                <p>Fill in the details below to generate your AI video prompts</p>
+            </div>
+
+            <main class="main-content">
+                <!-- Input Section -->
+                <section class="input-section glass-card">
+                    <h2 class="section-title">
+                        <span class="icon">📷</span>
+                        Reference & Settings
+                    </h2>
+
+                    <!-- Image Upload Grid -->
+                    <div class="upload-grid">
+                        <div class="upload-slot">
+                            <p class="slot-label">📷 Reference Image 1</p>
+                            <div class="upload-area" id="uploadArea1">
+                                <input type="file" id="imageInput1" accept="image/*" hidden>
+                                <div class="upload-content" id="uploadContent1">
+                                    <div class="upload-icon">
+                                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="1.5">
+                                            <path
+                                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                    <p class="upload-text">Click or drag</p>
+                                    <p class="upload-hint">Front/Main view</p>
+                                </div>
+                                <div class="image-preview" id="imagePreview1" style="display: none;">
+                                    <img id="previewImg1" src="" alt="Preview 1">
+                                    <button class="remove-image" id="removeImage1" title="Remove image">×</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="upload-slot">
+                            <p class="slot-label">📷 Reference Image 2</p>
+                            <div class="upload-area" id="uploadArea2">
+                                <input type="file" id="imageInput2" accept="image/*" hidden>
+                                <div class="upload-content" id="uploadContent2">
+                                    <div class="upload-icon">
+                                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="1.5">
+                                            <path
+                                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                    <p class="upload-text">Click or drag</p>
+                                    <p class="upload-hint">Side/Alt view (optional)</p>
+                                </div>
+                                <div class="image-preview" id="imagePreview2" style="display: none;">
+                                    <img id="previewImg2" src="" alt="Preview 2">
+                                    <button class="remove-image" id="removeImage2" title="Remove image">×</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Video Title -->
+                    <div class="input-group">
+                        <label for="videoTitleInput">
+                            <span class="icon">🎬</span>
+                            Video Title / Story Context
+                        </label>
+                        <input type="text" id="videoTitleInput" class="text-input"
+                            placeholder="e.g., A romantic date at the beach, Adventure in the mountains">
+                        <p class="input-hint">This will be used as the story context for all scenes</p>
+                    </div>
+
+                    <!-- Character Settings -->
+                    <div class="settings-row">
+                        <div class="input-group">
+                            <label for="characterSelect">
+                                <span class="icon">👤</span>
+                                Main Character
+                            </label>
+                            <select id="characterSelect" class="select-input">
+                                <option value="young-woman">Young Woman (20-30 years old)</option>
+                                <option value="young-man">Young Man (20-30 years old)</option>
+                                <option value="mature-woman">Mature Woman (30-45 years old)</option>
+                                <option value="mature-man">Mature Man (30-45 years old)</option>
+                                <option value="teen-girl">Teenage Girl (15-19 years old)</option>
+                                <option value="teen-boy">Teenage Boy (15-19 years old)</option>
+                                <option value="elderly-woman">Elderly Woman (60+ years old)</option>
+                                <option value="elderly-man">Elderly Man (60+ years old)</option>
+                                <option value="child-girl">Child Girl (8-14 years old)</option>
+                                <option value="child-boy">Child Boy (8-14 years old)</option>
+                                <option value="custom">✏️ Custom Character</option>
+                            </select>
+                            <input type="text" id="characterInput" class="text-input"
+                                style="display:none; margin-top:10px;" placeholder="Describe your character...">
+                        </div>
+
+                        <div class="input-group">
+                            <label for="costumeInput">
+                                <span class="icon">👗</span>
+                                Costume / Outfit
+                            </label>
+                            <input type="text" id="costumeInput" class="text-input"
+                                placeholder="e.g., red dress, casual jeans and t-shirt">
+                            <p class="input-hint">Describe what character wears</p>
+                        </div>
+                    </div>
+
+                    <!-- Location & Scene -->
+                    <div class="settings-row">
+                        <div class="input-group">
+                            <label for="locationSelect">
+                                <span class="icon">📍</span>
+                                Location
+                            </label>
+                            <select id="locationSelect" class="select-input">
+                                <option value="">-- Select Location --</option>
+                                <option value="beach">Beach (waves, sand, sunset)</option>
+                                <option value="cafe">Cafe / Coffee Shop</option>
+                                <option value="park">Park (trees, benches)</option>
+                                <option value="urban">Urban City Street</option>
+                                <option value="forest">Forest / Nature</option>
+                                <option value="mountain">Mountain View</option>
+                                <option value="studio">Studio Background</option>
+                                <option value="home">Home Interior</option>
+                                <option value="office">Office / Workspace</option>
+                                <option value="custom">✏️ Custom Location</option>
+                            </select>
+                            <input type="text" id="locationInput" class="text-input"
+                                style="display:none; margin-top:10px;" placeholder="Describe the location...">
+                        </div>
+
+                        <div class="input-group">
+                            <label for="timeSelect">
+                                <span class="icon">🌅</span>
+                                Time of Day
+                            </label>
+                            <select id="timeSelect" class="select-input">
+                                <option value="day">Day (Bright sunlight)</option>
+                                <option value="golden">Golden Hour (Warm sunset)</option>
+                                <option value="night">Night (City lights)</option>
+                                <option value="morning">Morning (Soft light)</option>
+                                <option value="overcast">Overcast (Cloudy)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Other Characters -->
+                    <div class="input-group">
+                        <label for="secondaryInput">
+                            <span class="icon">👥</span>
+                            Other Characters (Optional)
+                        </label>
+                        <input type="text" id="secondaryInput" class="text-input"
+                            placeholder="e.g., with a young man in formal suit, with her best friend">
+                    </div>
+
+                    <!-- Dialogue -->
+                    <div class="settings-row">
+                        <div class="input-group">
+                            <label for="dialogueSelect">
+                                <span class="icon">💬</span>
+                                Interaction Type
+                            </label>
+                            <select id="dialogueSelect" class="select-input">
+                                <option value="">-- No Dialogue --</option>
+                                <option value="talking">Talking together</option>
+                                <option value="laughing">Laughing together</option>
+                                <option value="walking">Walking side by side</option>
+                                <option value="holding-hands">Holding hands</option>
+                                <option value="hugging">Hugging</option>
+                                <option value="looking">Looking at each other</option>
+                                <option value="dancing">Dancing together</option>
+                                <option value="eating">Eating together</option>
+                                <option value="custom">✏️ Custom</option>
+                            </select>
+                            <input type="text" id="dialogueInput" class="text-input"
+                                style="display:none; margin-top:10px;" placeholder="Describe the interaction...">
+                        </div>
+
+                        <div class="input-group">
+                            <label for="dialogueLanguageSelect">
+                                <span class="icon">🌐</span>
+                                Dialogue Language
+                            </label>
+                            <select id="dialogueLanguageSelect" class="select-input">
+                                <option value="en">English</option>
+                                <option value="id">Indonesian</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Speech Text -->
+                    <div class="input-group">
+                        <label for="speechTextInput">
+                            <span class="icon">🗣️</span>
+                            What Character Says (Optional)
+                        </label>
+                        <textarea id="speechTextInput" class="text-input" rows="2"
+                            placeholder="e.g., 'Wow, this place is amazing!' or 'I love being here with you'"></textarea>
+                        <p class="input-hint">Short sentences work best (max 8 seconds of speech)</p>
+                    </div>
+
+                    <!-- Scene Count -->
+                    <div class="settings-row">
+                        <div class="input-group">
+                            <label for="sceneCountSelect">
+                                <span class="icon">🎞️</span>
+                                Number of Scenes
+                            </label>
+                            <select id="sceneCountSelect" class="select-input">
+                                <option value="1">1 Scene</option>
+                                <option value="3">3 Scenes</option>
+                                <option value="5" selected>5 Scenes</option>
+                                <option value="7">7 Scenes</option>
+                                <option value="10">10 Scenes</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="durationSelect">
+                                <span class="icon">⏱️</span>
+                                Video Duration
+                            </label>
+                            <select id="durationSelect" class="select-input">
+                                <option value="5">5 seconds</option>
+                                <option value="8" selected>8 seconds</option>
+                                <option value="10">10 seconds</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Generate Button -->
+                    <button id="generateBtn" class="generate-btn">
+                        <span class="btn-icon">✨</span>
+                        <span>Generate Prompts</span>
+                        <div class="btn-shine"></div>
+                    </button>
+                </section>
+
+                <!-- Output Section -->
+                <section id="outputSection" class="output-section" style="display: none;">
+                    <div class="output-header">
+                        <h2 class="section-title">
+                            <span class="icon">📝</span>
+                            Generated Prompts
+                        </h2>
+                        <button id="copyAllBtn" class="copy-all-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" />
+                                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                            </svg>
+                            Copy All
+                        </button>
+                    </div>
+                    <div id="promptsContainer" class="prompts-container"></div>
+                </section>
+            </main>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Made with ❤️ for AI Video Creators</p>
+        <p>Compatible with Google Flow, Veo 3, and other AI video generators</p>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <span class="toast-icon">✓</span>
+        <span id="toastMessage">Copied to clipboard!</span>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
