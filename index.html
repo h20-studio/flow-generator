@@ -1,438 +1,368 @@
-// ===== FlowPrompt - Simple Version =====
+<!DOCTYPE html>
+<html lang="en">
 
-// Wait for DOM to be ready
-document.addEventListener('DOMContentLoaded', function () {
-    console.log('FlowPrompt initialized');
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlowPrompt - AI Video Prompt Generator</title>
+    <meta name="description"
+        content="Create professional AI video prompts for Google Flow & Veo. Generate stunning videos instantly.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
 
-    // ===== DOM Elements =====
-    const generateBtn = document.getElementById('generateBtn');
-    const outputSection = document.getElementById('outputSection');
-    const promptsContainer = document.getElementById('promptsContainer');
-    const copyAllBtn = document.getElementById('copyAllBtn');
-    const toast = document.getElementById('toast');
-    const langBtns = document.querySelectorAll('.lang-btn');
+<body>
+    <!-- Background -->
+    <div class="bg-animation">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
 
-    // Form inputs
-    const characterSelect = document.getElementById('characterSelect');
-    const characterInput = document.getElementById('characterInput');
-    const costumeInput = document.getElementById('costumeInput');
-    const locationSelect = document.getElementById('locationSelect');
-    const locationInput = document.getElementById('locationInput');
-    const dialogueSelect = document.getElementById('dialogueSelect');
-    const dialogueInput = document.getElementById('dialogueInput');
-    const sceneCountSelect = document.getElementById('sceneCountSelect');
-    const timeSelect = document.getElementById('timeSelect');
-    const videoTitleInput = document.getElementById('videoTitleInput');
-    const secondaryInput = document.getElementById('secondaryInput');
-    const speechTextInput = document.getElementById('speechTextInput');
-    const dialogueLanguageSelect = document.getElementById('dialogueLanguageSelect');
-
-    // Image uploads
-    const uploadArea1 = document.getElementById('uploadArea1');
-    const imageInput1 = document.getElementById('imageInput1');
-    const uploadContent1 = document.getElementById('uploadContent1');
-    const imagePreview1 = document.getElementById('imagePreview1');
-    const previewImg1 = document.getElementById('previewImg1');
-    const removeImage1 = document.getElementById('removeImage1');
-
-    const uploadArea2 = document.getElementById('uploadArea2');
-    const imageInput2 = document.getElementById('imageInput2');
-    const uploadContent2 = document.getElementById('uploadContent2');
-    const imagePreview2 = document.getElementById('imagePreview2');
-    const previewImg2 = document.getElementById('previewImg2');
-    const removeImage2 = document.getElementById('removeImage2');
-
-    let currentLanguage = 'en';
-
-    // ===== Character Presets =====
-    const characterPresets = {
-        'young-woman': 'a beautiful young woman in her twenties',
-        'young-man': 'a handsome young man in his twenties',
-        'mature-woman': 'an elegant mature woman in her forties',
-        'mature-man': 'a distinguished mature man in his forties',
-        'teen-girl': 'a teenage girl around 16 years old',
-        'teen-boy': 'a teenage boy around 16 years old',
-        'elderly-woman': 'an elegant elderly woman',
-        'elderly-man': 'a distinguished elderly man',
-        'child-girl': 'a young girl around 10 years old',
-        'child-boy': 'a young boy around 10 years old'
-    };
-
-    // ===== Location Presets =====
-    const locationPresets = {
-        'beach': 'at a beautiful beach with ocean waves and golden sand',
-        'cafe': 'inside a cozy cafe with warm lighting',
-        'park': 'in a peaceful park with green trees',
-        'urban': 'on a modern city street',
-        'forest': 'in a natural forest with tall trees',
-        'mountain': 'on scenic mountains with beautiful views',
-        'studio': 'in a professional studio with clean background',
-        'home': 'inside a comfortable home interior',
-        'office': 'in a professional office workspace'
-    };
-
-    // ===== Dialogue Presets =====
-    const dialoguePresets = {
-        'talking': 'having a conversation together',
-        'laughing': 'laughing and smiling joyfully',
-        'walking': 'walking side by side',
-        'holding-hands': 'holding hands romantically',
-        'hugging': 'embracing in a warm hug',
-        'looking': 'gazing at each other',
-        'dancing': 'dancing together gracefully',
-        'eating': 'enjoying a meal together'
-    };
-
-    // ===== Scene Types =====
-    const sceneTypes = ['Opening Shot', 'Build-up', 'Development', 'Climax', 'Closing Shot'];
-
-    // ===== Camera Movements =====
-    const cameras = [
-        'slow cinematic pan',
-        'smooth dolly shot',
-        'gentle zoom',
-        'tracking shot following movement',
-        'slow motion capture'
-    ];
-
-    // ===== Time Lighting =====
-    const timeLighting = {
-        'day': 'bright natural daylight',
-        'golden': 'warm golden hour lighting',
-        'night': 'atmospheric night lighting with city lights',
-        'morning': 'soft morning light',
-        'overcast': 'soft diffused light'
-    };
-
-    // ===== Image Upload Handlers =====
-    function setupImageUpload(area, input, content, preview, img, removeBtn) {
-        if (!area || !input) return;
-
-        area.addEventListener('click', () => input.click());
-
-        area.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            area.classList.add('dragover');
-        });
-
-        area.addEventListener('dragleave', () => {
-            area.classList.remove('dragover');
-        });
-
-        area.addEventListener('drop', (e) => {
-            e.preventDefault();
-            area.classList.remove('dragover');
-            const file = e.dataTransfer.files[0];
-            if (file && file.type.startsWith('image/')) {
-                handleImage(file, content, preview, img);
-            }
-        });
-
-        input.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                handleImage(file, content, preview, img);
-            }
-        });
-
-        if (removeBtn) {
-            removeBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                input.value = '';
-                if (content) content.style.display = 'flex';
-                if (preview) preview.style.display = 'none';
-            });
-        }
-    }
-
-    function handleImage(file, content, preview, img) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            if (img) img.src = e.target.result;
-            if (content) content.style.display = 'none';
-            if (preview) preview.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-    }
-
-    // Setup both image uploads
-    setupImageUpload(uploadArea1, imageInput1, uploadContent1, imagePreview1, previewImg1, removeImage1);
-    setupImageUpload(uploadArea2, imageInput2, uploadContent2, imagePreview2, previewImg2, removeImage2);
-
-    // ===== Custom Input Toggle =====
-    function setupCustomToggle(select, input) {
-        if (!select || !input) return;
-        select.addEventListener('change', function () {
-            if (this.value === 'custom') {
-                input.style.display = 'block';
-                input.focus();
-            } else {
-                input.style.display = 'none';
-            }
-        });
-    }
-
-    setupCustomToggle(characterSelect, characterInput);
-    setupCustomToggle(locationSelect, locationInput);
-    setupCustomToggle(dialogueSelect, dialogueInput);
-
-    // ===== Language Switcher =====
-    langBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            langBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentLanguage = btn.dataset.lang;
-        });
-    });
-
-    // ===== Generate Button =====
-    if (generateBtn) {
-        generateBtn.addEventListener('click', function () {
-            console.log('Generate button clicked');
-            generatePrompts();
-        });
-    }
-
-    // ===== Copy All Button =====
-    if (copyAllBtn) {
-        copyAllBtn.addEventListener('click', function () {
-            const prompts = promptsContainer.querySelectorAll('.prompt-text');
-            let allText = '';
-            prompts.forEach((p, i) => {
-                allText += `Scene ${i + 1}:\n${p.textContent}\n\n`;
-            });
-            copyToClipboard(allText.trim());
-            showToast('All prompts copied!');
-        });
-    }
-
-    // ===== Generate Prompts Function =====
-    function generatePrompts() {
-        console.log('Generating prompts...');
-
-        // Get character
-        let character = '';
-        const charValue = characterSelect ? characterSelect.value : 'young-woman';
-        if (charValue === 'custom' && characterInput) {
-            character = characterInput.value.trim() || 'a person';
-        } else {
-            character = characterPresets[charValue] || 'a beautiful young woman';
-        }
-
-        // Get costume
-        const costume = costumeInput ? costumeInput.value.trim() : '';
-
-        // Get location
-        let location = '';
-        const locValue = locationSelect ? locationSelect.value : '';
-        if (locValue === 'custom' && locationInput) {
-            location = locationInput.value.trim();
-        } else if (locValue) {
-            location = locationPresets[locValue] || locValue;
-        }
-
-        // Get dialogue/interaction
-        let dialogue = '';
-        const dialogValue = dialogueSelect ? dialogueSelect.value : '';
-        if (dialogValue === 'custom' && dialogueInput) {
-            dialogue = dialogueInput.value.trim();
-        } else if (dialogValue) {
-            dialogue = dialoguePresets[dialogValue] || dialogValue;
-        }
-
-        // Get other values
-        const videoTitle = videoTitleInput ? videoTitleInput.value.trim() : '';
-        const secondary = secondaryInput ? secondaryInput.value.trim() : '';
-        const speechText = speechTextInput ? speechTextInput.value.trim() : '';
-        const timeOfDay = timeSelect ? timeSelect.value : 'day';
-        const sceneCount = sceneCountSelect ? parseInt(sceneCountSelect.value) || 5 : 5;
-
-        // Generate prompts
-        const prompts = [];
-        for (let i = 0; i < sceneCount; i++) {
-            const prompt = generateScenePrompt(i, sceneCount, {
-                character, costume, location, dialogue,
-                videoTitle, secondary, speechText, timeOfDay
-            });
-            prompts.push(prompt);
-        }
-
-        // Display prompts
-        displayPrompts(prompts);
-    }
-
-    // ===== Generate Single Scene Prompt =====
-    function generateScenePrompt(index, total, data) {
-        const { character, costume, location, dialogue, videoTitle, secondary, speechText, timeOfDay } = data;
-
-        // Determine scene type
-        let sceneType;
-        if (index === 0) sceneType = 'Opening Shot';
-        else if (index === total - 1) sceneType = 'Closing Shot';
-        else if (index < total * 0.3) sceneType = 'Build-up';
-        else if (index < total * 0.7) sceneType = 'Development';
-        else sceneType = 'Climax';
-
-        // Build prompt
-        let prompt = character;
-
-        if (costume) {
-            prompt += `, wearing ${costume}, the character MUST wear ${costume} in every single frame`;
-        }
-
-        if (videoTitle) {
-            prompt += `. ${videoTitle}`;
-        }
-
-        if (secondary) {
-            prompt += ` ${secondary}`;
-        }
-
-        if (dialogue) {
-            prompt += `, ${dialogue}`;
-        }
-
-        if (location) {
-            prompt += `. Scene is set ${location}`;
-        }
-
-        // Add camera and lighting
-        const camera = cameras[index % cameras.length];
-        const lighting = timeLighting[timeOfDay] || 'natural lighting';
-        prompt += `. ${camera}, ${lighting}`;
-
-        // Add speech if provided
-        let speech = '';
-        if (speechText) {
-            speech = ` Character says: '${speechText}'.`;
-            prompt += speech;
-        }
-
-        // Add movement instruction
-        prompt += '. Character is ACTIVELY MOVING with natural body motion, walking, gesturing, and expressing emotions dynamically. NO STATIC POSES.';
-
-        // Consistency note - include specific costume if provided
-        let consistency = 'IMPORTANT: Maintain EXACT same character appearance, same face, same clothing, same hairstyle throughout all scenes.';
-        if (costume) {
-            consistency += ` Character MUST always wear ${costume} - do NOT change the outfit.`;
-        }
-
-        // Negative prompt
-        const negativePrompt = 'Negative prompt: no captions, no subtitles, no text overlay, no watermark';
-
-        return {
-            sceneNumber: index + 1,
-            sceneType: sceneType,
-            prompt: prompt,
-            consistency: consistency,
-            negativePrompt: negativePrompt,
-            fullPrompt: `${prompt} ${consistency} ${negativePrompt}`
-        };
-    }
-
-    // ===== Display Prompts =====
-    function displayPrompts(prompts) {
-        if (!promptsContainer || !outputSection) {
-            console.error('Output elements not found');
-            return;
-        }
-
-        promptsContainer.innerHTML = '';
-
-        // Create JSON structure for all prompts
-        const jsonOutput = {
-            version: "1.0",
-            generator: "FlowPrompt by Mang Hendar",
-            totalScenes: prompts.length,
-            scenes: prompts.map(p => ({
-                scene: p.sceneNumber,
-                type: p.sceneType,
-                prompt: p.prompt,
-                consistency: p.consistency,
-                negative: p.negativePrompt
-            }))
-        };
-
-        // Display JSON output card
-        const jsonCard = document.createElement('div');
-        jsonCard.className = 'prompt-card';
-        jsonCard.innerHTML = `
-            <div class="prompt-header">
-                <span class="scene-badge">📄 JSON Output</span>
-                <span class="scene-type">${prompts.length} Scenes</span>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <rect width="32" height="32" rx="8" fill="url(#navLogoGrad)" />
+                    <path d="M10 16L14 12V14.5H22V17.5H14V20L10 16Z" fill="white" />
+                    <defs>
+                        <linearGradient id="navLogoGrad" x1="0" y1="0" x2="32" y2="32">
+                            <stop offset="0%" stop-color="#8B5CF6" />
+                            <stop offset="100%" stop-color="#EC4899" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <span>FlowPrompt by Mang Hendar WA: 085724875555</span>
             </div>
-            <div class="prompt-content">
-                <pre class="prompt-text json-output" style="white-space: pre-wrap; word-wrap: break-word; font-family: 'Courier New', monospace; font-size: 13px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; max-height: 400px; overflow-y: auto;">${JSON.stringify(jsonOutput, null, 2)}</pre>
+            <div class="nav-links">
+                <a href="#generator" class="nav-link">Generator</a>
             </div>
-            <button class="copy-btn" onclick="copyPrompt(this, '${encodeURIComponent(JSON.stringify(jsonOutput, null, 2))}')">
-                📋 Copy JSON
-            </button>
-        `;
-        promptsContainer.appendChild(jsonCard);
-
-        // Also display individual scene cards
-        prompts.forEach((p) => {
-            const card = document.createElement('div');
-            card.className = 'prompt-card';
-            card.innerHTML = `
-                <div class="prompt-header">
-                    <span class="scene-badge">🎬 Scene ${p.sceneNumber}</span>
-                    <span class="scene-type">${p.sceneType}</span>
+            <div class="nav-actions">
+                <div class="language-switcher">
+                    <button class="lang-btn active" data-lang="en">EN</button>
+                    <button class="lang-btn" data-lang="id">ID</button>
                 </div>
-                <div class="prompt-content">
-                    <p class="prompt-text">${p.prompt}</p>
-                    <p class="prompt-consistency">${p.consistency}</p>
-                    <p class="prompt-negative">${p.negativePrompt}</p>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="badge-dot"></span>
+                Powered by Google Flow & Veo AI
+            </div>
+            <h1>Create Prompts <span class="gradient-text">Instantly</span></h1>
+            <p class="hero-subtitle">
+                Generate professional, consistent prompts for Google Flow AI Video.<br>
+                Perfect character consistency in every scene.
+            </p>
+            <div class="hero-buttons">
+                <a href="#generator" class="btn-primary">
+                    <span>🚀</span> Start Creating Free
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <div class="stat-number">10+</div>
+                    <div class="stat-label">Scene Types</div>
                 </div>
-                <button class="copy-btn" onclick="copyPrompt(this, '${encodeURIComponent(p.fullPrompt)}')">
-                    📋 Copy
-                </button>
-            `;
-            promptsContainer.appendChild(card);
-        });
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">Free to Use</div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <div class="stat-number">∞</div>
+                    <div class="stat-label">Unlimited</div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-        outputSection.style.display = 'block';
-        outputSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-        console.log('Prompts displayed:', prompts.length);
-    }
+    <!-- Generator Section -->
+    <section id="generator" class="generator-section">
+        <div class="generator-container">
+            <div class="generator-header">
+                <h2>Prompt Generator</h2>
+                <p>Fill in the details below to generate your AI video prompts</p>
+            </div>
 
-    // ===== Copy Functions =====
-    function copyToClipboard(text) {
-        navigator.clipboard.writeText(text).then(() => {
-            console.log('Copied to clipboard');
-        }).catch(err => {
-            console.error('Copy failed:', err);
-            // Fallback
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-        });
-    }
+            <main class="main-content">
+                <!-- Input Section -->
+                <section class="input-section glass-card">
+                    <h2 class="section-title">
+                        <span class="icon">📷</span>
+                        Reference & Settings
+                    </h2>
 
-    function showToast(message) {
-        if (!toast) return;
-        const msgEl = document.getElementById('toastMessage');
-        if (msgEl) msgEl.textContent = message;
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 2000);
-    }
+                    <!-- Image Upload Grid -->
+                    <div class="upload-grid">
+                        <div class="upload-slot">
+                            <p class="slot-label">📷 Reference Image 1</p>
+                            <div class="upload-area" id="uploadArea1">
+                                <input type="file" id="imageInput1" accept="image/*" hidden>
+                                <div class="upload-content" id="uploadContent1">
+                                    <div class="upload-icon">
+                                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="1.5">
+                                            <path
+                                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                    <p class="upload-text">Click or drag</p>
+                                    <p class="upload-hint">Front/Main view</p>
+                                </div>
+                                <div class="image-preview" id="imagePreview1" style="display: none;">
+                                    <img id="previewImg1" src="" alt="Preview 1">
+                                    <button class="remove-image" id="removeImage1" title="Remove image">×</button>
+                                </div>
+                            </div>
+                        </div>
 
-    // Make copyPrompt global for inline onclick
-    window.copyPrompt = function (btn, encodedPrompt) {
-        const text = decodeURIComponent(encodedPrompt);
-        copyToClipboard(text);
-        btn.textContent = '✓ Copied!';
-        btn.classList.add('copied');
-        setTimeout(() => {
-            btn.textContent = '📋 Copy';
-            btn.classList.remove('copied');
-        }, 2000);
-        showToast('Prompt copied!');
-    };
+                        <div class="upload-slot">
+                            <p class="slot-label">📷 Reference Image 2</p>
+                            <div class="upload-area" id="uploadArea2">
+                                <input type="file" id="imageInput2" accept="image/*" hidden>
+                                <div class="upload-content" id="uploadContent2">
+                                    <div class="upload-icon">
+                                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="1.5">
+                                            <path
+                                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                    <p class="upload-text">Click or drag</p>
+                                    <p class="upload-hint">Side/Alt view (optional)</p>
+                                </div>
+                                <div class="image-preview" id="imagePreview2" style="display: none;">
+                                    <img id="previewImg2" src="" alt="Preview 2">
+                                    <button class="remove-image" id="removeImage2" title="Remove image">×</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-    console.log('FlowPrompt ready!');
-});
+                    <!-- Video Title -->
+                    <div class="input-group">
+                        <label for="videoTitleInput">
+                            <span class="icon">🎬</span>
+                            Video Title / Story Context
+                        </label>
+                        <input type="text" id="videoTitleInput" class="text-input"
+                            placeholder="e.g., A romantic date at the beach, Adventure in the mountains">
+                        <p class="input-hint">This will be used as the story context for all scenes</p>
+                    </div>
+
+                    <!-- Character Settings -->
+                    <div class="settings-row">
+                        <div class="input-group">
+                            <label for="characterSelect">
+                                <span class="icon">👤</span>
+                                Main Character
+                            </label>
+                            <select id="characterSelect" class="select-input">
+                                <option value="young-woman">Young Woman (20-30 years old)</option>
+                                <option value="young-man">Young Man (20-30 years old)</option>
+                                <option value="mature-woman">Mature Woman (30-45 years old)</option>
+                                <option value="mature-man">Mature Man (30-45 years old)</option>
+                                <option value="teen-girl">Teenage Girl (15-19 years old)</option>
+                                <option value="teen-boy">Teenage Boy (15-19 years old)</option>
+                                <option value="elderly-woman">Elderly Woman (60+ years old)</option>
+                                <option value="elderly-man">Elderly Man (60+ years old)</option>
+                                <option value="child-girl">Child Girl (8-14 years old)</option>
+                                <option value="child-boy">Child Boy (8-14 years old)</option>
+                                <option value="custom">✏️ Custom Character</option>
+                            </select>
+                            <input type="text" id="characterInput" class="text-input"
+                                style="display:none; margin-top:10px;" placeholder="Describe your character...">
+                        </div>
+
+                        <div class="input-group">
+                            <label for="costumeInput">
+                                <span class="icon">👗</span>
+                                Costume / Outfit
+                            </label>
+                            <input type="text" id="costumeInput" class="text-input"
+                                placeholder="e.g., red dress, casual jeans and t-shirt">
+                            <p class="input-hint">Describe what character wears</p>
+                        </div>
+                    </div>
+
+                    <!-- Location & Scene -->
+                    <div class="settings-row">
+                        <div class="input-group">
+                            <label for="locationSelect">
+                                <span class="icon">📍</span>
+                                Location
+                            </label>
+                            <select id="locationSelect" class="select-input">
+                                <option value="">-- Select Location --</option>
+                                <option value="beach">Beach (waves, sand, sunset)</option>
+                                <option value="cafe">Cafe / Coffee Shop</option>
+                                <option value="park">Park (trees, benches)</option>
+                                <option value="urban">Urban City Street</option>
+                                <option value="forest">Forest / Nature</option>
+                                <option value="mountain">Mountain View</option>
+                                <option value="studio">Studio Background</option>
+                                <option value="home">Home Interior</option>
+                                <option value="office">Office / Workspace</option>
+                                <option value="custom">✏️ Custom Location</option>
+                            </select>
+                            <input type="text" id="locationInput" class="text-input"
+                                style="display:none; margin-top:10px;" placeholder="Describe the location...">
+                        </div>
+
+                        <div class="input-group">
+                            <label for="timeSelect">
+                                <span class="icon">🌅</span>
+                                Time of Day
+                            </label>
+                            <select id="timeSelect" class="select-input">
+                                <option value="day">Day (Bright sunlight)</option>
+                                <option value="golden">Golden Hour (Warm sunset)</option>
+                                <option value="night">Night (City lights)</option>
+                                <option value="morning">Morning (Soft light)</option>
+                                <option value="overcast">Overcast (Cloudy)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Other Characters -->
+                    <div class="input-group">
+                        <label for="secondaryInput">
+                            <span class="icon">👥</span>
+                            Other Characters (Optional)
+                        </label>
+                        <input type="text" id="secondaryInput" class="text-input"
+                            placeholder="e.g., with a young man in formal suit, with her best friend">
+                    </div>
+
+                    <!-- Dialogue -->
+                    <div class="settings-row">
+                        <div class="input-group">
+                            <label for="dialogueSelect">
+                                <span class="icon">💬</span>
+                                Interaction Type
+                            </label>
+                            <select id="dialogueSelect" class="select-input">
+                                <option value="">-- No Dialogue --</option>
+                                <option value="talking">Talking together</option>
+                                <option value="laughing">Laughing together</option>
+                                <option value="walking">Walking side by side</option>
+                                <option value="holding-hands">Holding hands</option>
+                                <option value="hugging">Hugging</option>
+                                <option value="looking">Looking at each other</option>
+                                <option value="dancing">Dancing together</option>
+                                <option value="eating">Eating together</option>
+                                <option value="custom">✏️ Custom</option>
+                            </select>
+                            <input type="text" id="dialogueInput" class="text-input"
+                                style="display:none; margin-top:10px;" placeholder="Describe the interaction...">
+                        </div>
+
+                        <div class="input-group">
+                            <label for="dialogueLanguageSelect">
+                                <span class="icon">🌐</span>
+                                Dialogue Language
+                            </label>
+                            <select id="dialogueLanguageSelect" class="select-input">
+                                <option value="en">English</option>
+                                <option value="id">Indonesian</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Speech Text -->
+                    <div class="input-group">
+                        <label for="speechTextInput">
+                            <span class="icon">🗣️</span>
+                            What Character Says (Optional)
+                        </label>
+                        <textarea id="speechTextInput" class="text-input" rows="2"
+                            placeholder="e.g., 'Wow, this place is amazing!' or 'I love being here with you'"></textarea>
+                        <p class="input-hint">Short sentences work best (max 8 seconds of speech)</p>
+                    </div>
+
+                    <!-- Scene Count -->
+                    <div class="settings-row">
+                        <div class="input-group">
+                            <label for="sceneCountSelect">
+                                <span class="icon">🎞️</span>
+                                Number of Scenes
+                            </label>
+                            <select id="sceneCountSelect" class="select-input">
+                                <option value="1">1 Scene</option>
+                                <option value="3">3 Scenes</option>
+                                <option value="5" selected>5 Scenes</option>
+                                <option value="7">7 Scenes</option>
+                                <option value="10">10 Scenes</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="durationSelect">
+                                <span class="icon">⏱️</span>
+                                Video Duration
+                            </label>
+                            <select id="durationSelect" class="select-input">
+                                <option value="5">5 seconds</option>
+                                <option value="8" selected>8 seconds</option>
+                                <option value="10">10 seconds</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Generate Button -->
+                    <button id="generateBtn" class="generate-btn">
+                        <span class="btn-icon">✨</span>
+                        <span>Generate Prompts</span>
+                        <div class="btn-shine"></div>
+                    </button>
+                </section>
+
+                <!-- Output Section -->
+                <section id="outputSection" class="output-section" style="display: none;">
+                    <div class="output-header">
+                        <h2 class="section-title">
+                            <span class="icon">📝</span>
+                            Generated Prompts
+                        </h2>
+                        <button id="copyAllBtn" class="copy-all-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" />
+                                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                            </svg>
+                            Copy All
+                        </button>
+                    </div>
+                    <div id="promptsContainer" class="prompts-container"></div>
+                </section>
+            </main>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>© 2026 H20 STUDIO. All Rights Reserved.</p>
+        <p style="margin-top: 15px; font-weight: 600; color: #EC4899;">📱 Menerima Jasa Pembuatan Website - WA:
+            085724875555</p>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <span class="toast-icon">✓</span>
+        <span id="toastMessage">Copied to clipboard!</span>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
