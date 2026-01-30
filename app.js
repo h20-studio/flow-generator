@@ -339,6 +339,38 @@ document.addEventListener('DOMContentLoaded', function () {
 
         promptsContainer.innerHTML = '';
 
+        // Create JSON structure for all prompts
+        const jsonOutput = {
+            version: "1.0",
+            generator: "FlowPrompt by Mang Hendar",
+            totalScenes: prompts.length,
+            scenes: prompts.map(p => ({
+                scene: p.sceneNumber,
+                type: p.sceneType,
+                prompt: p.prompt,
+                consistency: p.consistency,
+                negative: p.negativePrompt
+            }))
+        };
+
+        // Display JSON output card
+        const jsonCard = document.createElement('div');
+        jsonCard.className = 'prompt-card';
+        jsonCard.innerHTML = `
+            <div class="prompt-header">
+                <span class="scene-badge">📄 JSON Output</span>
+                <span class="scene-type">${prompts.length} Scenes</span>
+            </div>
+            <div class="prompt-content">
+                <pre class="prompt-text json-output" style="white-space: pre-wrap; word-wrap: break-word; font-family: 'Courier New', monospace; font-size: 13px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; max-height: 400px; overflow-y: auto;">${JSON.stringify(jsonOutput, null, 2)}</pre>
+            </div>
+            <button class="copy-btn" onclick="copyPrompt(this, '${encodeURIComponent(JSON.stringify(jsonOutput, null, 2))}')">
+                📋 Copy JSON
+            </button>
+        `;
+        promptsContainer.appendChild(jsonCard);
+
+        // Also display individual scene cards
         prompts.forEach((p) => {
             const card = document.createElement('div');
             card.className = 'prompt-card';
