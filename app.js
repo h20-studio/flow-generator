@@ -277,7 +277,7 @@ document.addEventListener('DOMContentLoaded', function () {
         let prompt = character;
 
         if (costume) {
-            prompt += `, wearing ${costume}`;
+            prompt += `, wearing ${costume}, the character MUST wear ${costume} in every single frame`;
         }
 
         if (videoTitle) {
@@ -311,8 +311,11 @@ document.addEventListener('DOMContentLoaded', function () {
         // Add movement instruction
         prompt += '. Character is ACTIVELY MOVING with natural body motion, walking, gesturing, and expressing emotions dynamically. NO STATIC POSES.';
 
-        // Consistency note
-        const consistency = 'IMPORTANT: Maintain EXACT same character appearance, same face, same clothing, same hairstyle throughout all scenes.';
+        // Consistency note - include specific costume if provided
+        let consistency = 'IMPORTANT: Maintain EXACT same character appearance, same face, same clothing, same hairstyle throughout all scenes.';
+        if (costume) {
+            consistency += ` Character MUST always wear ${costume} - do NOT change the outfit.`;
+        }
 
         // Negative prompt
         const negativePrompt = 'Negative prompt: no captions, no subtitles, no text overlay, no watermark';
