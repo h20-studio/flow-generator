@@ -43,6 +43,46 @@ document.addEventListener('DOMContentLoaded', function () {
     const removeImage2 = document.getElementById('removeImage2');
 
     let currentLanguage = 'en';
+    let currentTab = 'video'; // 'video' or 'image'
+
+    // Checkbox for no dialog text
+    const noDialogTextCheckbox = document.getElementById('noDialogText');
+
+    // Tab buttons
+    const tabBtns = document.querySelectorAll('.tab-btn');
+
+    // ===== Tab Switcher =====
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            tabBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentTab = btn.dataset.tab;
+            console.log('Tab switched to:', currentTab);
+
+            // Update UI labels based on tab
+            updateUIForTab(currentTab);
+        });
+    });
+
+    // ===== Update UI for Tab =====
+    function updateUIForTab(tab) {
+        const titleLabel = document.querySelector('label[for="videoTitleInput"]');
+        const titleInput = document.getElementById('videoTitleInput');
+        const sceneLabel = document.querySelector('label[for="sceneCountSelect"]');
+        const durationGroup = document.getElementById('durationSelect')?.closest('.input-group');
+
+        if (tab === 'image') {
+            if (titleLabel) titleLabel.innerHTML = '<span class="icon">🖼️</span> Image Title / Description';
+            if (titleInput) titleInput.placeholder = 'e.g., Portrait of a woman in a garden, Landscape at sunset';
+            if (sceneLabel) sceneLabel.innerHTML = '<span class="icon">🎞️</span> Number of Images';
+            if (durationGroup) durationGroup.style.display = 'none';
+        } else {
+            if (titleLabel) titleLabel.innerHTML = '<span class="icon">🎬</span> Video Title / Story Context';
+            if (titleInput) titleInput.placeholder = 'e.g., A romantic date at the beach, Adventure in the mountains';
+            if (sceneLabel) sceneLabel.innerHTML = '<span class="icon">🎞️</span> Number of Scenes';
+            if (durationGroup) durationGroup.style.display = 'block';
+        }
+    }
 
     // ===== Character Presets =====
     const characterPresets = {
@@ -247,18 +287,35 @@ document.addEventListener('DOMContentLoaded', function () {
         const timeOfDay = timeSelect ? timeSelect.value : 'day';
         const sceneCount = sceneCountSelect ? parseInt(sceneCountSelect.value) || 5 : 5;
 
-        // Generate prompts
+        // Get image style (Banana or GPT)
+        const imageStyleInput = document.querySelector('input[name="imageStyle"]:checked');
+        const imageStyle = imageStyleInput ? imageStyleInput.value : 'banana';
+
+        // Get no dialog text option
+        const noDialogText = noDialogTextCheckbox ? noDialogTextCheckbox.checked : true;
+
+        // Generate prompts based on current tab (video or image)
         const prompts = [];
         for (let i = 0; i < sceneCount; i++) {
-            const prompt = generateScenePrompt(i, sceneCount, {
-                character, costume, location, dialogue,
-                videoTitle, secondary, speechText, timeOfDay
-            });
+            let prompt;
+            if (currentTab === 'image') {
+                prompt = generateImagePrompt(i, sceneCount, {
+                    character, costume, location, dialogue,
+                    videoTitle, secondary, speechText, timeOfDay,
+                    imageStyle, noDialogText
+                });
+            } else {
+                prompt = generateVideoPrompt(i, sceneCount, {
+                    character, costume, location, dialogue,
+                    videoTitle, secondary, speechText, timeOfDay,
+                    imageStyle, noDialogText
+                });
+            }
             prompts.push(prompt);
         }
 
         // Display prompts
-        displayPrompts(prompts);
+        displayPrompts(prompts, currentTab);
     }
 
     // ===== Scene Emotions & Actions by Type =====
@@ -299,9 +356,163 @@ document.addEventListener('DOMContentLoaded', function () {
         'Professional film production, natural skin tones, atmospheric depth, refined aesthetics'
     ];
 
-    // ===== Generate Single Scene Prompt (JSON Format for Google Flow Veo 3) =====
-    function generateScenePrompt(index, total, data) {
-        const { character, costume, location, dialogue, videoTitle, secondary, speechText, timeOfDay } = data;
+    // ===== Image Style Presets =====
+    const imageStylePresets = {
+        'banana': {
+            quality: "4K ultra-realistic cinematic",
+            colorGrading: "Hollywood film color science with rich contrast",
+            rendering: "photorealistic rendering, film grain texture, anamorphic lens",
+            skin: "natural skin texture with subsurface scattering, realistic pores",
+            lighting: "volumetric lighting with natural shadows",
+            details: "hyper-detailed textures, sharp focus, realistic materials"
+        },
+        'gpt': {
+            quality: "4K artistic stylized",
+            colorGrading: "vibrant artistic color palette with creative tones",
+            rendering: "digital art style, clean lines, stylized aesthetics",
+            skin: "smooth artistic skin rendering, stylized features",
+            lighting: "dramatic artistic lighting with creative shadows",
+            details: "stylized details, artistic interpretation, clean composition"
+        }
+    };
+
+    // ===== Image Composition Types =====
+    const imageCompositions = [
+        'rule of thirds with subject on left intersection',
+        'centered composition with symmetrical balance',
+        'golden ratio spiral leading to subject',
+        'diagonal composition creating dynamic tension',
+        'framing composition using environmental elements'
+    ];
+
+    // ===== Generate Image Prompt (for static images) =====
+    function generateImagePrompt(index, total, data) {
+        const { character, costume, location, dialogue, videoTitle, secondary, speechText, timeOfDay, imageStyle, noDialogText } = data;
+
+        const lighting = timeLighting[timeOfDay] || 'natural lighting';
+        const stylePreset = imageStylePresets[imageStyle] || imageStylePresets['banana'];
+        const composition = imageCompositions[index % imageCompositions.length];
+
+        // Build avoid list for images
+        const avoidList = [
+            "distorted features",
+            "extra limbs",
+            "blurry details",
+            "duplicate faces",
+            "floating hands",
+            "watermarks",
+            "low resolution",
+            "pixelation"
+        ];
+
+        if (noDialogText) {
+            avoidList.unshift(
+                "text overlays",
+                "dialog boxes",
+                "speech bubbles",
+                "subtitles",
+                "captions",
+                "written text",
+                "floating text",
+                "any text in image"
+            );
+        }
+
+        // Build JSON structure for IMAGE generation
+        const jsonPrompt = {
+            image: {
+                number: index + 1,
+                total: total,
+                type: "static image"
+            },
+            renderStyle: {
+                type: imageStyle === 'gpt' ? 'GPT Artistic' : 'Banana Cinematic',
+                rendering: stylePreset.rendering,
+                quality: stylePreset.quality
+            },
+            subject: {
+                description: character,
+                appearance: costume ? `wearing ${costume}` : null,
+                physicalDetails: stylePreset.skin,
+                pose: "natural and expressive pose",
+                expression: "genuine emotional expression"
+            },
+            visualStyle: {
+                quality: stylePreset.quality,
+                colorGrading: stylePreset.colorGrading,
+                depthOfField: "professional bokeh with sharp subject focus",
+                resolution: "4K ultra high definition",
+                details: stylePreset.details
+            },
+            composition: {
+                type: composition,
+                framing: "professional portrait framing",
+                perspective: "eye-level natural perspective",
+                aspectRatio: "16:9 or 4:3"
+            },
+            environment: {
+                setting: location || "contextual background",
+                timeOfDay: timeOfDay,
+                lighting: `${lighting}, ${stylePreset.lighting}`,
+                atmosphere: "natural ambient with environmental depth"
+            },
+            context: videoTitle ? {
+                narrative: videoTitle,
+                mood: "matching visual mood"
+            } : null,
+            additionalSubjects: secondary ? {
+                description: secondary,
+                uniqueAppearance: true,
+                positioning: "natural placement in scene"
+            } : null,
+            interaction: dialogue ? {
+                type: dialogue,
+                connectionStyle: "genuine and natural"
+            } : null,
+            noTextInImage: noDialogText,
+            consistency: {
+                maintainIdentity: true,
+                preserveAppearance: true,
+                singleCharacterReference: true,
+                uniqueFeatures: true
+            },
+            avoid: avoidList
+        };
+
+        // Clean JSON
+        const cleanJSON = JSON.parse(JSON.stringify(jsonPrompt, (key, value) => {
+            if (value === null || value === undefined) return undefined;
+            return value;
+        }));
+
+        const jsonString = JSON.stringify(cleanJSON, null, 2);
+
+        // Simple prompt for images
+        const styleLabel = imageStyle === 'gpt' ? 'GPT artistic style' : 'Banana cinematic style';
+        let simplePrompt = `[IMAGE - ${styleLabel}] ${character}`;
+        if (costume) simplePrompt += `, wearing ${costume}`;
+        if (location) simplePrompt += `, ${location}`;
+        simplePrompt += `. ${composition}, ${lighting}`;
+        if (dialogue) simplePrompt += `, ${dialogue}`;
+        if (videoTitle) simplePrompt += `. Theme: ${videoTitle}`;
+        if (noDialogText) simplePrompt += '. NO TEXT IN IMAGE.';
+        simplePrompt += ' High resolution, professional quality.';
+
+        return {
+            sceneNumber: index + 1,
+            sceneType: 'Image ' + (index + 1),
+            promptType: 'image',
+            imageStyle: imageStyle,
+            jsonPrompt: cleanJSON,
+            jsonString: jsonString,
+            simplePrompt: simplePrompt,
+            fullPrompt: jsonString
+        };
+    }
+
+    // ===== Generate Video Prompt (for video scenes) =====
+    function generateVideoPrompt(index, total, data) {
+        const { character, costume, location, dialogue, videoTitle, secondary, speechText, timeOfDay, imageStyle, noDialogText } = data;
 
         // Determine scene type
         let sceneType;
@@ -321,35 +532,68 @@ document.addEventListener('DOMContentLoaded', function () {
         const emotion = sceneData.emotions[index % sceneData.emotions.length];
         const action = sceneData.actions[index % sceneData.actions.length];
         const cameraAngle = sceneData.cameraAngles[index % sceneData.cameraAngles.length];
-        const visualStyle = visualStyles[index % visualStyles.length];
         const lighting = timeLighting[timeOfDay] || 'natural lighting';
 
-        // Build JSON structure safe for Google Flow Veo 3
+        // Get style preset based on selection
+        const stylePreset = imageStylePresets[imageStyle] || imageStylePresets['banana'];
+
+        // Build avoid list - always include text/dialog related items when noDialogText is true
+        const avoidList = [
+            "distorted features",
+            "extra limbs",
+            "blurry details",
+            "static poses",
+            "duplicate faces",
+            "floating hands",
+            "watermarks"
+        ];
+
+        // Add text-related items to avoid if noDialogText is enabled
+        if (noDialogText) {
+            avoidList.unshift(
+                "text overlays",
+                "dialog boxes",
+                "speech bubbles",
+                "subtitles",
+                "captions",
+                "written text",
+                "floating text",
+                "any text in image"
+            );
+        }
+
+        // Build JSON structure safe for Google Flow Veo 3 VIDEO
         const jsonPrompt = {
-            scene: {
+            video: {
                 number: index + 1,
                 total: total,
-                type: sceneType
+                type: sceneType,
+                sceneType: sceneTypeKey
+            },
+            renderStyle: {
+                type: imageStyle === 'gpt' ? 'GPT Artistic' : 'Banana Cinematic',
+                rendering: stylePreset.rendering,
+                quality: stylePreset.quality
             },
             subject: {
                 description: character,
                 appearance: costume ? `wearing ${costume}` : null,
-                physicalDetails: "natural skin texture, realistic hair, expressive eyes with natural catchlight",
+                physicalDetails: stylePreset.skin,
                 emotionalState: emotion,
                 action: action
             },
             visualStyle: {
-                quality: "4K cinematic",
-                colorGrading: "professional cinematic color science",
+                quality: stylePreset.quality,
+                colorGrading: stylePreset.colorGrading,
                 depthOfField: "natural bokeh with sharp subject focus",
                 aspectRatio: "16:9",
                 frameRate: "24fps smooth motion",
-                style: visualStyle
+                details: stylePreset.details
             },
             environment: {
                 setting: location || "contextual background",
                 timeOfDay: timeOfDay,
-                lighting: lighting,
+                lighting: `${lighting}, ${stylePreset.lighting}`,
                 atmosphere: "natural ambient lighting with environmental depth"
             },
             camera: {
@@ -380,6 +624,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 type: dialogue,
                 connectionStyle: "genuine and natural"
             } : null,
+            noTextInImage: noDialogText,
             consistency: {
                 maintainIdentity: true,
                 preserveAppearance: true,
@@ -387,16 +632,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 noCloning: true,
                 uniqueFeatures: true
             },
-            avoid: [
-                "text overlays",
-                "watermarks",
-                "distorted features",
-                "extra limbs",
-                "blurry details",
-                "static poses",
-                "duplicate faces",
-                "floating hands"
-            ]
+            avoid: avoidList
         };
 
         // Clean JSON - remove null values
@@ -409,18 +645,22 @@ document.addEventListener('DOMContentLoaded', function () {
         const jsonString = JSON.stringify(cleanJSON, null, 2);
 
         // Create a simple text version for quick copy
-        let simplePrompt = `${character}`;
+        const styleLabel = imageStyle === 'gpt' ? 'GPT artistic style' : 'Banana cinematic style';
+        let simplePrompt = `[VIDEO - ${styleLabel}] ${character}`;
         if (costume) simplePrompt += `, wearing ${costume}`;
         if (location) simplePrompt += `, ${location}`;
         simplePrompt += `. ${cameraAngle}, ${lighting}, ${emotion}, ${action}`;
         if (dialogue) simplePrompt += `, ${dialogue}`;
         if (speechText) simplePrompt += `. Speaking: "${speechText}"`;
         if (videoTitle) simplePrompt += `. Context: ${videoTitle}`;
-        simplePrompt += '. Maintain character consistency throughout.';
+        if (noDialogText) simplePrompt += '. NO TEXT OR DIALOG IN VIDEO.';
+        simplePrompt += ' Maintain character consistency throughout.';
 
         return {
             sceneNumber: index + 1,
             sceneType: sceneTypeKey,
+            promptType: 'video',
+            imageStyle: imageStyle,
             jsonPrompt: cleanJSON,
             jsonString: jsonString,
             simplePrompt: simplePrompt,
@@ -429,7 +669,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ===== Display Prompts (JSON Format) =====
-    function displayPrompts(prompts) {
+    function displayPrompts(prompts, tabType) {
         if (!promptsContainer || !outputSection) {
             console.error('Output elements not found');
             return;
@@ -454,10 +694,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 .replace(/\n/g, '<br>')
                 .replace(/  /g, '&nbsp;&nbsp;');
 
+            // Get style badge
+            const styleBadge = p.imageStyle === 'gpt' ? '🤖 GPT' : '🍌 Banana';
+
+            // Get type badge based on promptType
+            const typeBadge = p.promptType === 'image' ? '🖼️ Image' : '🎬 Video';
+            const typeLabel = p.promptType === 'image' ? 'Image' : 'Scene';
+
             card.innerHTML = `
                 <div class="prompt-header">
-                    <span class="scene-badge">🎬 Scene ${p.sceneNumber}</span>
+                    <span class="scene-badge">${typeBadge} ${p.sceneNumber}</span>
                     <span class="scene-type">${p.sceneType}</span>
+                    <span class="style-badge">${styleBadge}</span>
                     <span class="format-badge">JSON</span>
                 </div>
                 <div class="prompt-content">
