@@ -15,6 +15,42 @@
 </head>
 
 <body>
+    <!-- Maintenance Overlay -->
+    <div id="maintenanceOverlay" class="maintenance-overlay show">
+        <div class="maintenance-content">
+            <div class="maintenance-icon">
+                <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
+                    <!-- Gear 1 -->
+                    <g class="gear-spin">
+                        <circle cx="40" cy="70" r="25" fill="#555" stroke="#444" stroke-width="3" />
+                        <circle cx="40" cy="70" r="10" fill="#333" />
+                        <rect x="38" y="40" width="4" height="15" fill="#555" />
+                        <rect x="38" y="85" width="4" height="15" fill="#555" />
+                        <rect x="10" y="68" width="15" height="4" fill="#555" />
+                        <rect x="55" y="68" width="15" height="4" fill="#555" />
+                    </g>
+                    <!-- Gear 2 with wrench -->
+                    <g class="gear-spin-reverse">
+                        <circle cx="75" cy="45" r="30" fill="#777" stroke="#666" stroke-width="3" />
+                        <circle cx="75" cy="45" r="12" fill="#555" />
+                        <rect x="73" y="8" width="4" height="18" fill="#777" />
+                        <rect x="73" y="64" width="4" height="18" fill="#777" />
+                        <rect x="38" y="43" width="18" height="4" fill="#777" />
+                        <rect x="94" y="43" width="18" height="4" fill="#777" />
+                    </g>
+                    <!-- Wrench -->
+                    <path d="M85 35 L105 15 L110 20 L90 40 Z" fill="#06B6D4" stroke="#0891B2" stroke-width="2" />
+                </svg>
+            </div>
+            <h2>🚧 MAINTENANCE 🚧</h2>
+            <p class="maintenance-msg">Website sedang dalam perbaikan</p>
+            <p class="maintenance-time">Maaf, silakan coba lagi nanti</p>
+            <div class="maintenance-contact">
+                <p>Hubungi: <a href="https://wa.me/6285724875555">📱 085724875555</a></p>
+            </div>
+        </div>
+    </div>
+
     <!-- Background -->
     <div class="bg-animation">
         <div class="gradient-orb orb-1"></div>
@@ -363,6 +399,37 @@
     </div>
 
     <script src="app.js"></script>
+
+    <!-- Maintenance Overlay Script -->
+    <script>
+        // Show maintenance overlay on any click
+        document.addEventListener('DOMContentLoaded', function () {
+            const overlay = document.getElementById('maintenanceOverlay');
+            const closeBtn = document.getElementById('closeOverlay');
+
+            // Show overlay when clicking anywhere except close button
+            document.body.addEventListener('click', function (e) {
+                // Don't show if clicking close button or inside overlay content
+                if (e.target.id === 'closeOverlay' || e.target.closest('.maintenance-content')) {
+                    return;
+                }
+                overlay.classList.add('show');
+            });
+
+            // Close overlay
+            closeBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                overlay.classList.remove('show');
+            });
+
+            // Close on overlay background click
+            overlay.addEventListener('click', function (e) {
+                if (e.target === overlay) {
+                    overlay.classList.remove('show');
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>
