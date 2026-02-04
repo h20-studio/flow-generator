@@ -600,16 +600,36 @@ body {
 .generator-header {
     text-align: center;
     margin-bottom: 40px;
+    padding-top: 100px;
 }
 
-.generator-header h2 {
-    font-size: 32px;
+.main-title {
+    font-size: clamp(2.5rem, 6vw, 4rem);
     font-weight: 800;
-    margin-bottom: 12px;
-    background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+    margin-bottom: 16px;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.gradient-text {
+    background: linear-gradient(135deg, var(--primary-light), var(--secondary), var(--accent));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    background-size: 200% 200%;
+    animation: gradientShift 5s ease infinite;
+}
+
+@keyframes gradientShift {
+
+    0%,
+    100% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
 }
 
 .generator-header p {
