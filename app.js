@@ -261,6 +261,44 @@ document.addEventListener('DOMContentLoaded', function () {
         displayPrompts(prompts);
     }
 
+    // ===== Scene Emotions & Actions by Type =====
+    const sceneEmotions = {
+        'Opening Shot': {
+            emotions: ['calm and serene', 'curious and intrigued', 'peaceful and content', 'hopeful and excited'],
+            actions: ['standing gracefully', 'looking around with wonder', 'taking a deep breath', 'walking slowly into frame'],
+            cameraAngles: ['wide establishing shot', 'slow push-in from medium distance', 'cinematic reveal shot', 'dolly in with slight crane up']
+        },
+        'Build-up': {
+            emotions: ['growing excitement', 'gentle anticipation', 'warm and friendly', 'playful and lighthearted'],
+            actions: ['walking with purpose', 'gesturing expressively', 'interacting with environment', 'showing genuine interest'],
+            cameraAngles: ['medium shot following movement', 'tracking shot from the side', 'smooth dolly alongside subject', 'handheld with subtle movement']
+        },
+        'Development': {
+            emotions: ['deep engagement', 'genuine happiness', 'thoughtful reflection', 'warm connection'],
+            actions: ['expressing emotions through gestures', 'moving naturally and fluidly', 'reacting to surroundings', 'showing authentic body language'],
+            cameraAngles: ['close-up capturing emotion', 'over-the-shoulder shot', 'orbital shot around subject', 'push-in to emphasize moment']
+        },
+        'Climax': {
+            emotions: ['peak emotion', 'overwhelming joy', 'profound realization', 'intense connection'],
+            actions: ['powerful emotional expression', 'meaningful gesture or movement', 'climactic action', 'turning point moment'],
+            cameraAngles: ['dramatic close-up', 'slow motion capture', 'dynamic crane shot', 'impactful dolly zoom']
+        },
+        'Closing Shot': {
+            emotions: ['satisfied and peaceful', 'nostalgic warmth', 'hopeful for future', 'content and fulfilled'],
+            actions: ['walking away gracefully', 'looking back with smile', 'embracing the moment', 'fading into the scene'],
+            cameraAngles: ['wide pull-back shot', 'slow crane up and away', 'fade with soft focus', 'cinematic ending pullout']
+        }
+    };
+
+    // ===== Visual Styles =====
+    const visualStyles = [
+        'Cinematic 4K quality, photorealistic rendering, film grain texture, anamorphic lens distortion',
+        'Ultra HD cinematic look, shallow depth of field, professional color grading, filmic texture',
+        'Hollywood-style cinematography, rich contrast, detailed textures, premium production value',
+        'High-end commercial quality, crisp details, balanced exposure, cinematic color palette',
+        'Professional film production, natural skin tones, atmospheric depth, refined aesthetics'
+    ];
+
     // ===== Generate Single Scene Prompt =====
     function generateScenePrompt(index, total, data) {
         const { character, costume, location, dialogue, videoTitle, secondary, speechText, timeOfDay } = data;
@@ -273,60 +311,160 @@ document.addEventListener('DOMContentLoaded', function () {
         else if (index < total * 0.7) sceneType = 'Development';
         else sceneType = 'Climax';
 
-        // Build prompt
-        let prompt = character;
-
-        if (costume) {
-            prompt += `, wearing ${costume}, the character MUST wear ${costume} in every single frame`;
-        }
-
-        if (videoTitle) {
-            prompt += `. ${videoTitle}`;
-        }
-
-        if (secondary) {
-            prompt += ` ${secondary}`;
-        }
-
-        if (dialogue) {
-            prompt += `, ${dialogue}`;
-        }
-
-        if (location) {
-            prompt += `. Scene is set ${location}`;
-        }
-
-        // Add camera and lighting
-        const camera = cameras[index % cameras.length];
+        // Get scene-specific elements
+        const sceneData = sceneEmotions[sceneType];
+        const emotion = sceneData.emotions[index % sceneData.emotions.length];
+        const action = sceneData.actions[index % sceneData.actions.length];
+        const cameraAngle = sceneData.cameraAngles[index % sceneData.cameraAngles.length];
+        const visualStyle = visualStyles[index % visualStyles.length];
         const lighting = timeLighting[timeOfDay] || 'natural lighting';
-        prompt += `. ${camera}, ${lighting}`;
 
-        // Add speech if provided
-        let speech = '';
-        if (speechText) {
-            speech = ` Character says: '${speechText}'.`;
-            prompt += speech;
-        }
+        // Build comprehensive prompt sections
+        let sections = [];
 
-        // Add movement instruction
-        prompt += '. Character is ACTIVELY MOVING with natural body motion, walking, gesturing, and expressing emotions dynamically. NO STATIC POSES.';
-
-        // Consistency note - include specific costume if provided
-        let consistency = 'IMPORTANT: Maintain EXACT same character appearance, same face, same clothing, same hairstyle throughout all scenes.';
+        // [SCENE DESCRIPTION] - More detailed
+        let sceneDesc = `[SCENE ${index + 1}/${total} - ${sceneType.toUpperCase()}]\n`;
+        sceneDesc += `Main subject: ${character}`;
         if (costume) {
-            consistency += ` Character MUST always wear ${costume} - do NOT change the outfit.`;
+            sceneDesc += `, wearing ${costume} with visible fabric texture and realistic clothing folds`;
+        }
+        sceneDesc += `. Physical details: natural skin with pores and subtle imperfections, realistic hair with individual strands visible, expressive eyes with natural catchlight`;
+        if (videoTitle) {
+            sceneDesc += `.\n\nNARRATIVE CONTEXT: "${videoTitle}" - This scene must visually represent this story/theme`;
+        }
+        if (secondary) {
+            sceneDesc += `.\n\nADDITIONAL CHARACTERS: ${secondary} - Each character must have completely DIFFERENT and UNIQUE facial features, body type, and appearance`;
+        }
+        sections.push(sceneDesc);
+
+        // [VISUAL STYLE] - Enhanced
+        let visualSection = '[VISUAL STYLE & QUALITY]\n';
+        visualSection += `${visualStyle}.\n`;
+        visualSection += '• Resolution: 4K Ultra HD, crystal clear sharpness\n';
+        visualSection += '• Color grading: Professional cinematic color science\n';
+        visualSection += '• Depth of field: Natural bokeh with sharp subject focus\n';
+        visualSection += '• Aspect ratio: 16:9 widescreen cinematic format\n';
+        visualSection += '• Frame rate: Smooth 24fps cinematic motion';
+        sections.push(visualSection);
+
+        // [ENVIRONMENT] - More detailed
+        let envSection = '[ENVIRONMENT & ATMOSPHERE]\n';
+        if (location) {
+            envSection += `Primary setting: ${location}.\n`;
+            envSection += '• Environmental details: Include subtle background elements, ambient objects, and realistic textures\n';
+        }
+        envSection += `• Time of day: ${timeOfDay}\n`;
+        envSection += `• Lighting condition: ${lighting}\n`;
+        envSection += '• Atmosphere: Natural ambient particles (dust motes, light rays where appropriate)\n';
+        envSection += '• Sound design cue: Environmental ambiance matching the setting';
+        sections.push(envSection);
+
+        // [CAMERA & MOVEMENT] - Enhanced
+        let cameraSection = '[CAMERA WORK & CINEMATOGRAPHY]\n';
+        cameraSection += `• Primary shot: ${cameraAngle}\n`;
+        cameraSection += `• Camera movement: ${cameras[index % cameras.length]}\n`;
+        cameraSection += '• Focus: Maintain sharp focus on subject face and upper body\n';
+        cameraSection += '• Framing: Rule of thirds composition, subject properly positioned\n';
+        cameraSection += '• Motion: Smooth, professional stabilized movement without jarring transitions\n';
+        cameraSection += '• Transition hint: Seamless flow to next scene';
+        sections.push(cameraSection);
+
+        // [CHARACTER ACTION & EMOTION] - Enhanced
+        let actionSection = '[CHARACTER PERFORMANCE & EMOTION]\n';
+        actionSection += `• Primary action: ${action}\n`;
+        actionSection += `• Emotional state: ${emotion}\n`;
+        actionSection += '• Facial micro-expressions: Subtle eye movements, natural blinks, slight mouth movements\n';
+        actionSection += '• Body language: Natural posture shifts, weight distribution, realistic gestures\n';
+        actionSection += '• Hand movements: Purposeful, natural hand gestures that support the action\n';
+        if (dialogue) {
+            actionSection += `• Character interaction: ${dialogue} - show genuine connection and reaction between characters\n`;
+        }
+        actionSection += '• CRITICAL: NO STATIC POSES - character must show continuous micro-movements throughout';
+        sections.push(actionSection);
+
+        // [DIALOGUE/AUDIO] - SIGNIFICANTLY ENHANCED
+        if (speechText) {
+            let speechSection = '[DIALOGUE & SPEECH - CRITICAL SECTION]\n';
+            speechSection += `═══════════════════════════════════════\n`;
+            speechSection += `SPOKEN DIALOGUE: "${speechText}"\n`;
+            speechSection += `═══════════════════════════════════════\n\n`;
+            speechSection += '• LIP SYNCHRONIZATION REQUIREMENTS:\n';
+            speechSection += '  - Mouth movements MUST precisely match each syllable of the dialogue\n';
+            speechSection += '  - Visible lip articulation for consonants (M, B, P, F, V, TH, etc.)\n';
+            speechSection += '  - Natural jaw movement and mouth opening for vowels\n';
+            speechSection += '  - Tongue visible for appropriate sounds (L, TH, etc.)\n\n';
+            speechSection += '• FACIAL EXPRESSION DURING SPEECH:\n';
+            speechSection += '  - Eyes must express the emotion matching the dialogue content\n';
+            speechSection += '  - Eyebrows should move naturally with speech emphasis\n';
+            speechSection += '  - Slight head movements and nods during natural speech\n';
+            speechSection += '  - Appropriate facial muscle tensions matching the words\n\n';
+            speechSection += '• SPEECH TIMING & RHYTHM:\n';
+            speechSection += '  - Natural pacing, not too fast or too slow\n';
+            speechSection += '  - Appropriate pauses between phrases\n';
+            speechSection += '  - Breath pauses at natural break points\n';
+            speechSection += '  - Speech begins after character is fully in frame\n\n';
+            speechSection += '• AUDIO CLARITY:\n';
+            speechSection += '  - Clear, audible dialogue without mumbling\n';
+            speechSection += '  - Voice tone matching character emotion and context\n';
+            speechSection += '  - Proper voice projection for the scene setting';
+            sections.push(speechSection);
+        } else {
+            // Even without speech, add presence instructions
+            let presenceSection = '[CHARACTER PRESENCE]\n';
+            presenceSection += '• Silent scene - focus on visual storytelling\n';
+            presenceSection += '• Natural breathing visible (chest/shoulder subtle movement)\n';
+            presenceSection += '• Ambient sounds from environment\n';
+            presenceSection += '• Character may have subtle vocalizations (sighs, hums) if appropriate';
+            sections.push(presenceSection);
         }
 
-        // Negative prompt
-        const negativePrompt = 'Negative prompt: no captions, no subtitles, no text overlay, no watermark';
+        // [CONSISTENCY RULES]
+        let consistency = '[CONSISTENCY RULES - CRITICAL]\n';
+        consistency += '• MAINTAIN EXACT same facial features, bone structure, and skin tone across ALL scenes\n';
+        consistency += '• PRESERVE identical hairstyle, hair color, and hair texture throughout\n';
+        if (costume) {
+            consistency += `• CHARACTER MUST WEAR: ${costume} - DO NOT change outfit under any circumstances\n`;
+        }
+        consistency += '• Keep consistent body proportions and posture characteristics\n';
+        consistency += '• Match lighting on face and body to maintain visual continuity\n';
+        consistency += '• Reference the uploaded image for exact character appearance\n';
+        consistency += '• SINGLE CHARACTER ONLY - use reference image for ONE person only, do NOT duplicate\n';
+        consistency += '• NO CLONING - never show the same face on multiple people in the scene\n';
+        consistency += '• Each character must have UNIQUE and DISTINCT facial features\n';
+        consistency += '• Hands must belong to the correct character - no floating or duplicated hands';
+        sections.push(consistency);
+
+        // [NEGATIVE PROMPT]
+        let negativeSection = '[NEGATIVE PROMPT]\n';
+        negativeSection += 'Avoid: text overlays, captions, subtitles, watermarks, logos, ';
+        negativeSection += 'distorted faces, extra limbs, unnatural skin, blurry details, ';
+        negativeSection += 'low quality, pixelation, jpeg artifacts, costume changes, ';
+        negativeSection += 'character inconsistency, static poses, frozen expressions, ';
+        negativeSection += 'DUPLICATE FACES, CLONED CHARACTERS, same face on multiple people, ';
+        negativeSection += 'extra hands, floating hands, duplicated hands, wrong hand placement, ';
+        negativeSection += 'identical twins unless specified, copy-paste characters, mirrored faces';
+
+        // Combine all sections
+        const fullPrompt = sections.join('\n\n') + '\n\n' + negativeSection;
+
+        // Also create a condensed version for quick copy
+        let condensedPrompt = `${character}`;
+        if (costume) condensedPrompt += ` wearing ${costume}`;
+        if (videoTitle) condensedPrompt += `, ${videoTitle}`;
+        if (location) condensedPrompt += `, ${location}`;
+        condensedPrompt += `. ${cameraAngle}, ${lighting}, ${emotion}, ${action}`;
+        if (dialogue) condensedPrompt += `, ${dialogue}`;
+        if (speechText) condensedPrompt += `. Says: "${speechText}"`;
+        condensedPrompt += '. Maintain exact character consistency. No text overlays or watermarks.';
 
         return {
             sceneNumber: index + 1,
             sceneType: sceneType,
-            prompt: prompt,
+            prompt: fullPrompt,
+            condensedPrompt: condensedPrompt,
             consistency: consistency,
-            negativePrompt: negativePrompt,
-            fullPrompt: `${prompt} ${consistency} ${negativePrompt}`
+            negativePrompt: negativeSection,
+            fullPrompt: fullPrompt
         };
     }
 
@@ -339,30 +477,33 @@ document.addEventListener('DOMContentLoaded', function () {
 
         promptsContainer.innerHTML = '';
 
-        // Display individual JSON cards per scene
+        // Display detailed prompt cards per scene
         prompts.forEach((p) => {
-            // Create JSON for this scene only
-            const sceneJson = {
-                scene: p.sceneNumber,
-                type: p.sceneType,
-                prompt: p.prompt,
-                consistency: p.consistency,
-                negative: p.negativePrompt
-            };
-
             const card = document.createElement('div');
             card.className = 'prompt-card';
+
+            // Create formatted HTML from the prompt sections
+            const formattedPrompt = p.fullPrompt
+                .replace(/\[([^\]]+)\]/g, '<span class="prompt-section-title">[$1]</span>')
+                .replace(/•/g, '<span class="bullet-point">•</span>')
+                .replace(/\n/g, '<br>');
+
             card.innerHTML = `
                 <div class="prompt-header">
                     <span class="scene-badge">🎬 Scene ${p.sceneNumber}</span>
                     <span class="scene-type">${p.sceneType}</span>
                 </div>
                 <div class="prompt-content">
-                    <pre class="prompt-text json-output" style="white-space: pre-wrap; word-wrap: break-word; font-family: 'Courier New', monospace; font-size: 13px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px;">${JSON.stringify(sceneJson, null, 2)}</pre>
+                    <div class="prompt-text detailed-prompt">${formattedPrompt}</div>
                 </div>
-                <button class="copy-btn" onclick="copyPrompt(this, '${encodeURIComponent(JSON.stringify(sceneJson, null, 2))}')">
-                    📋 Copy JSON
-                </button>
+                <div class="prompt-actions">
+                    <button class="copy-btn copy-full" onclick="copyPrompt(this, '${encodeURIComponent(p.fullPrompt)}')">
+                        📋 Copy Full Prompt
+                    </button>
+                    <button class="copy-btn copy-condensed" onclick="copyPrompt(this, '${encodeURIComponent(p.condensedPrompt)}')">
+                        ⚡ Copy Quick Version
+                    </button>
+                </div>
             `;
             promptsContainer.appendChild(card);
         });
