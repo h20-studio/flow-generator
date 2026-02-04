@@ -97,27 +97,6 @@
             <p class="hero-subtitle">
                 Generate professional, consistent prompts for Google Flow AI Video.<br>
                 Perfect character consistency in every scene.
-            </p>
-            <div class="hero-buttons">
-                <a href="#generator" class="btn-primary">
-                    <span>🚀</span> Start Creating Free
-                </a>
-            </div>
-            <div class="hero-stats">
-                <div class="stat-item">
-                    <div class="stat-number">10+</div>
-                    <div class="stat-label">Scene Types</div>
-                </div>
-                <div class="stat-divider"></div>
-                <div class="stat-item">
-                    <div class="stat-number">100%</div>
-                    <div class="stat-label">Free to Use</div>
-                </div>
-                <div class="stat-divider"></div>
-                <div class="stat-item">
-                    <div class="stat-number">∞</div>
-                    <div class="stat-label">Unlimited</div>
-                </div>
             </div>
         </div>
     </section>
@@ -399,37 +378,6 @@
     </div>
 
     <script src="app.js"></script>
-
-    <!-- Maintenance Overlay Script -->
-    <script>
-        // Show maintenance overlay on any click
-        document.addEventListener('DOMContentLoaded', function () {
-            const overlay = document.getElementById('maintenanceOverlay');
-            const closeBtn = document.getElementById('closeOverlay');
-
-            // Show overlay when clicking anywhere except close button
-            document.body.addEventListener('click', function (e) {
-                // Don't show if clicking close button or inside overlay content
-                if (e.target.id === 'closeOverlay' || e.target.closest('.maintenance-content')) {
-                    return;
-                }
-                overlay.classList.add('show');
-            });
-
-            // Close overlay
-            closeBtn.addEventListener('click', function (e) {
-                e.stopPropagation();
-                overlay.classList.remove('show');
-            });
-
-            // Close on overlay background click
-            overlay.addEventListener('click', function (e) {
-                if (e.target === overlay) {
-                    overlay.classList.remove('show');
-                }
-            });
-        });
-    </script>
 </body>
 
 </html>
