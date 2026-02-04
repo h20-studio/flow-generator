@@ -1007,8 +1007,56 @@ textarea.text-input:focus {
     font-weight: 500;
 }
 
+.format-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    background: rgba(16, 185, 129, 0.2);
+    border: 1px solid var(--accent-2);
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--accent-2);
+    letter-spacing: 0.5px;
+}
+
 .prompt-content {
     margin-bottom: 16px;
+}
+
+.json-display {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    overflow-x: auto;
+    font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    margin: 0;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.json-display code {
+    color: var(--text-secondary);
+}
+
+.json-key {
+    color: #EC4899;
+    font-weight: 500;
+}
+
+.json-string {
+    color: #10B981;
+}
+
+.json-number {
+    color: #F59E0B;
+}
+
+.json-boolean {
+    color: #06B6D4;
 }
 
 .prompt-text {
