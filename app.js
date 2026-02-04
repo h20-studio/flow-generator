@@ -299,176 +299,136 @@ document.addEventListener('DOMContentLoaded', function () {
         'Professional film production, natural skin tones, atmospheric depth, refined aesthetics'
     ];
 
-    // ===== Generate Single Scene Prompt =====
+    // ===== Generate Single Scene Prompt (JSON Format for Google Flow Veo 3) =====
     function generateScenePrompt(index, total, data) {
         const { character, costume, location, dialogue, videoTitle, secondary, speechText, timeOfDay } = data;
 
         // Determine scene type
         let sceneType;
-        if (index === 0) sceneType = 'Opening Shot';
-        else if (index === total - 1) sceneType = 'Closing Shot';
-        else if (index < total * 0.3) sceneType = 'Build-up';
-        else if (index < total * 0.7) sceneType = 'Development';
-        else sceneType = 'Climax';
+        if (index === 0) sceneType = 'opening';
+        else if (index === total - 1) sceneType = 'closing';
+        else if (index < total * 0.3) sceneType = 'buildup';
+        else if (index < total * 0.7) sceneType = 'development';
+        else sceneType = 'climax';
 
         // Get scene-specific elements
-        const sceneData = sceneEmotions[sceneType];
+        const sceneTypeKey = index === 0 ? 'Opening Shot' :
+            index === total - 1 ? 'Closing Shot' :
+                index < total * 0.3 ? 'Build-up' :
+                    index < total * 0.7 ? 'Development' : 'Climax';
+
+        const sceneData = sceneEmotions[sceneTypeKey];
         const emotion = sceneData.emotions[index % sceneData.emotions.length];
         const action = sceneData.actions[index % sceneData.actions.length];
         const cameraAngle = sceneData.cameraAngles[index % sceneData.cameraAngles.length];
         const visualStyle = visualStyles[index % visualStyles.length];
         const lighting = timeLighting[timeOfDay] || 'natural lighting';
 
-        // Build comprehensive prompt sections
-        let sections = [];
+        // Build JSON structure safe for Google Flow Veo 3
+        const jsonPrompt = {
+            scene: {
+                number: index + 1,
+                total: total,
+                type: sceneType
+            },
+            subject: {
+                description: character,
+                appearance: costume ? `wearing ${costume}` : null,
+                physicalDetails: "natural skin texture, realistic hair, expressive eyes with natural catchlight",
+                emotionalState: emotion,
+                action: action
+            },
+            visualStyle: {
+                quality: "4K cinematic",
+                colorGrading: "professional cinematic color science",
+                depthOfField: "natural bokeh with sharp subject focus",
+                aspectRatio: "16:9",
+                frameRate: "24fps smooth motion",
+                style: visualStyle
+            },
+            environment: {
+                setting: location || "contextual background",
+                timeOfDay: timeOfDay,
+                lighting: lighting,
+                atmosphere: "natural ambient lighting with environmental depth"
+            },
+            camera: {
+                shotType: cameraAngle,
+                movement: cameras[index % cameras.length],
+                focus: "sharp focus on subject",
+                framing: "rule of thirds composition"
+            },
+            audio: speechText ? {
+                dialogue: speechText,
+                lipSync: true,
+                voiceTone: "natural and clear",
+                timing: "natural speech rhythm"
+            } : {
+                type: "ambient",
+                breathing: "visible natural breathing",
+                environment: "scene-appropriate sounds"
+            },
+            context: videoTitle ? {
+                narrative: videoTitle,
+                storyRole: sceneType
+            } : null,
+            additionalSubjects: secondary ? {
+                description: secondary,
+                uniqueAppearance: true
+            } : null,
+            interaction: dialogue ? {
+                type: dialogue,
+                connectionStyle: "genuine and natural"
+            } : null,
+            consistency: {
+                maintainIdentity: true,
+                preserveAppearance: true,
+                singleCharacterReference: true,
+                noCloning: true,
+                uniqueFeatures: true
+            },
+            avoid: [
+                "text overlays",
+                "watermarks",
+                "distorted features",
+                "extra limbs",
+                "blurry details",
+                "static poses",
+                "duplicate faces",
+                "floating hands"
+            ]
+        };
 
-        // [SCENE DESCRIPTION] - More detailed
-        let sceneDesc = `[SCENE ${index + 1}/${total} - ${sceneType.toUpperCase()}]\n`;
-        sceneDesc += `Main subject: ${character}`;
-        if (costume) {
-            sceneDesc += `, wearing ${costume} with visible fabric texture and realistic clothing folds`;
-        }
-        sceneDesc += `. Physical details: natural skin with pores and subtle imperfections, realistic hair with individual strands visible, expressive eyes with natural catchlight`;
-        if (videoTitle) {
-            sceneDesc += `.\n\nNARRATIVE CONTEXT: "${videoTitle}" - This scene must visually represent this story/theme`;
-        }
-        if (secondary) {
-            sceneDesc += `.\n\nADDITIONAL CHARACTERS: ${secondary} - Each character must have completely DIFFERENT and UNIQUE facial features, body type, and appearance`;
-        }
-        sections.push(sceneDesc);
+        // Clean JSON - remove null values
+        const cleanJSON = JSON.parse(JSON.stringify(jsonPrompt, (key, value) => {
+            if (value === null || value === undefined) return undefined;
+            return value;
+        }));
 
-        // [VISUAL STYLE] - Enhanced
-        let visualSection = '[VISUAL STYLE & QUALITY]\n';
-        visualSection += `${visualStyle}.\n`;
-        visualSection += '• Resolution: 4K Ultra HD, crystal clear sharpness\n';
-        visualSection += '• Color grading: Professional cinematic color science\n';
-        visualSection += '• Depth of field: Natural bokeh with sharp subject focus\n';
-        visualSection += '• Aspect ratio: 16:9 widescreen cinematic format\n';
-        visualSection += '• Frame rate: Smooth 24fps cinematic motion';
-        sections.push(visualSection);
+        // Create formatted JSON string
+        const jsonString = JSON.stringify(cleanJSON, null, 2);
 
-        // [ENVIRONMENT] - More detailed
-        let envSection = '[ENVIRONMENT & ATMOSPHERE]\n';
-        if (location) {
-            envSection += `Primary setting: ${location}.\n`;
-            envSection += '• Environmental details: Include subtle background elements, ambient objects, and realistic textures\n';
-        }
-        envSection += `• Time of day: ${timeOfDay}\n`;
-        envSection += `• Lighting condition: ${lighting}\n`;
-        envSection += '• Atmosphere: Natural ambient particles (dust motes, light rays where appropriate)\n';
-        envSection += '• Sound design cue: Environmental ambiance matching the setting';
-        sections.push(envSection);
-
-        // [CAMERA & MOVEMENT] - Enhanced
-        let cameraSection = '[CAMERA WORK & CINEMATOGRAPHY]\n';
-        cameraSection += `• Primary shot: ${cameraAngle}\n`;
-        cameraSection += `• Camera movement: ${cameras[index % cameras.length]}\n`;
-        cameraSection += '• Focus: Maintain sharp focus on subject face and upper body\n';
-        cameraSection += '• Framing: Rule of thirds composition, subject properly positioned\n';
-        cameraSection += '• Motion: Smooth, professional stabilized movement without jarring transitions\n';
-        cameraSection += '• Transition hint: Seamless flow to next scene';
-        sections.push(cameraSection);
-
-        // [CHARACTER ACTION & EMOTION] - Enhanced
-        let actionSection = '[CHARACTER PERFORMANCE & EMOTION]\n';
-        actionSection += `• Primary action: ${action}\n`;
-        actionSection += `• Emotional state: ${emotion}\n`;
-        actionSection += '• Facial micro-expressions: Subtle eye movements, natural blinks, slight mouth movements\n';
-        actionSection += '• Body language: Natural posture shifts, weight distribution, realistic gestures\n';
-        actionSection += '• Hand movements: Purposeful, natural hand gestures that support the action\n';
-        if (dialogue) {
-            actionSection += `• Character interaction: ${dialogue} - show genuine connection and reaction between characters\n`;
-        }
-        actionSection += '• CRITICAL: NO STATIC POSES - character must show continuous micro-movements throughout';
-        sections.push(actionSection);
-
-        // [DIALOGUE/AUDIO] - SIGNIFICANTLY ENHANCED
-        if (speechText) {
-            let speechSection = '[DIALOGUE & SPEECH - CRITICAL SECTION]\n';
-            speechSection += `═══════════════════════════════════════\n`;
-            speechSection += `SPOKEN DIALOGUE: "${speechText}"\n`;
-            speechSection += `═══════════════════════════════════════\n\n`;
-            speechSection += '• LIP SYNCHRONIZATION REQUIREMENTS:\n';
-            speechSection += '  - Mouth movements MUST precisely match each syllable of the dialogue\n';
-            speechSection += '  - Visible lip articulation for consonants (M, B, P, F, V, TH, etc.)\n';
-            speechSection += '  - Natural jaw movement and mouth opening for vowels\n';
-            speechSection += '  - Tongue visible for appropriate sounds (L, TH, etc.)\n\n';
-            speechSection += '• FACIAL EXPRESSION DURING SPEECH:\n';
-            speechSection += '  - Eyes must express the emotion matching the dialogue content\n';
-            speechSection += '  - Eyebrows should move naturally with speech emphasis\n';
-            speechSection += '  - Slight head movements and nods during natural speech\n';
-            speechSection += '  - Appropriate facial muscle tensions matching the words\n\n';
-            speechSection += '• SPEECH TIMING & RHYTHM:\n';
-            speechSection += '  - Natural pacing, not too fast or too slow\n';
-            speechSection += '  - Appropriate pauses between phrases\n';
-            speechSection += '  - Breath pauses at natural break points\n';
-            speechSection += '  - Speech begins after character is fully in frame\n\n';
-            speechSection += '• AUDIO CLARITY:\n';
-            speechSection += '  - Clear, audible dialogue without mumbling\n';
-            speechSection += '  - Voice tone matching character emotion and context\n';
-            speechSection += '  - Proper voice projection for the scene setting';
-            sections.push(speechSection);
-        } else {
-            // Even without speech, add presence instructions
-            let presenceSection = '[CHARACTER PRESENCE]\n';
-            presenceSection += '• Silent scene - focus on visual storytelling\n';
-            presenceSection += '• Natural breathing visible (chest/shoulder subtle movement)\n';
-            presenceSection += '• Ambient sounds from environment\n';
-            presenceSection += '• Character may have subtle vocalizations (sighs, hums) if appropriate';
-            sections.push(presenceSection);
-        }
-
-        // [CONSISTENCY RULES]
-        let consistency = '[CONSISTENCY RULES - CRITICAL]\n';
-        consistency += '• MAINTAIN EXACT same facial features, bone structure, and skin tone across ALL scenes\n';
-        consistency += '• PRESERVE identical hairstyle, hair color, and hair texture throughout\n';
-        if (costume) {
-            consistency += `• CHARACTER MUST WEAR: ${costume} - DO NOT change outfit under any circumstances\n`;
-        }
-        consistency += '• Keep consistent body proportions and posture characteristics\n';
-        consistency += '• Match lighting on face and body to maintain visual continuity\n';
-        consistency += '• Reference the uploaded image for exact character appearance\n';
-        consistency += '• SINGLE CHARACTER ONLY - use reference image for ONE person only, do NOT duplicate\n';
-        consistency += '• NO CLONING - never show the same face on multiple people in the scene\n';
-        consistency += '• Each character must have UNIQUE and DISTINCT facial features\n';
-        consistency += '• Hands must belong to the correct character - no floating or duplicated hands';
-        sections.push(consistency);
-
-        // [NEGATIVE PROMPT]
-        let negativeSection = '[NEGATIVE PROMPT]\n';
-        negativeSection += 'Avoid: text overlays, captions, subtitles, watermarks, logos, ';
-        negativeSection += 'distorted faces, extra limbs, unnatural skin, blurry details, ';
-        negativeSection += 'low quality, pixelation, jpeg artifacts, costume changes, ';
-        negativeSection += 'character inconsistency, static poses, frozen expressions, ';
-        negativeSection += 'DUPLICATE FACES, CLONED CHARACTERS, same face on multiple people, ';
-        negativeSection += 'extra hands, floating hands, duplicated hands, wrong hand placement, ';
-        negativeSection += 'identical twins unless specified, copy-paste characters, mirrored faces';
-
-        // Combine all sections
-        const fullPrompt = sections.join('\n\n') + '\n\n' + negativeSection;
-
-        // Also create a condensed version for quick copy
-        let condensedPrompt = `${character}`;
-        if (costume) condensedPrompt += ` wearing ${costume}`;
-        if (videoTitle) condensedPrompt += `, ${videoTitle}`;
-        if (location) condensedPrompt += `, ${location}`;
-        condensedPrompt += `. ${cameraAngle}, ${lighting}, ${emotion}, ${action}`;
-        if (dialogue) condensedPrompt += `, ${dialogue}`;
-        if (speechText) condensedPrompt += `. Says: "${speechText}"`;
-        condensedPrompt += '. Maintain exact character consistency. No text overlays or watermarks.';
+        // Create a simple text version for quick copy
+        let simplePrompt = `${character}`;
+        if (costume) simplePrompt += `, wearing ${costume}`;
+        if (location) simplePrompt += `, ${location}`;
+        simplePrompt += `. ${cameraAngle}, ${lighting}, ${emotion}, ${action}`;
+        if (dialogue) simplePrompt += `, ${dialogue}`;
+        if (speechText) simplePrompt += `. Speaking: "${speechText}"`;
+        if (videoTitle) simplePrompt += `. Context: ${videoTitle}`;
+        simplePrompt += '. Maintain character consistency throughout.';
 
         return {
             sceneNumber: index + 1,
-            sceneType: sceneType,
-            prompt: fullPrompt,
-            condensedPrompt: condensedPrompt,
-            consistency: consistency,
-            negativePrompt: negativeSection,
-            fullPrompt: fullPrompt
+            sceneType: sceneTypeKey,
+            jsonPrompt: cleanJSON,
+            jsonString: jsonString,
+            simplePrompt: simplePrompt,
+            fullPrompt: jsonString
         };
     }
 
-    // ===== Display Prompts =====
+    // ===== Display Prompts (JSON Format) =====
     function displayPrompts(prompts) {
         if (!promptsContainer || !outputSection) {
             console.error('Output elements not found');
@@ -477,31 +437,38 @@ document.addEventListener('DOMContentLoaded', function () {
 
         promptsContainer.innerHTML = '';
 
-        // Display detailed prompt cards per scene
+        // Display JSON prompt cards per scene
         prompts.forEach((p) => {
             const card = document.createElement('div');
             card.className = 'prompt-card';
 
-            // Create formatted HTML from the prompt sections
-            const formattedPrompt = p.fullPrompt
-                .replace(/\[([^\]]+)\]/g, '<span class="prompt-section-title">[$1]</span>')
-                .replace(/•/g, '<span class="bullet-point">•</span>')
-                .replace(/\n/g, '<br>');
+            // Format JSON with syntax highlighting
+            const jsonFormatted = p.jsonString
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"([^"]+)":/g, '<span class="json-key">"$1"</span>:')
+                .replace(/: "([^"]+)"/g, ': <span class="json-string">"$1"</span>')
+                .replace(/: (\d+)/g, ': <span class="json-number">$1</span>')
+                .replace(/: (true|false)/g, ': <span class="json-boolean">$1</span>')
+                .replace(/\n/g, '<br>')
+                .replace(/  /g, '&nbsp;&nbsp;');
 
             card.innerHTML = `
                 <div class="prompt-header">
                     <span class="scene-badge">🎬 Scene ${p.sceneNumber}</span>
                     <span class="scene-type">${p.sceneType}</span>
+                    <span class="format-badge">JSON</span>
                 </div>
                 <div class="prompt-content">
-                    <div class="prompt-text detailed-prompt">${formattedPrompt}</div>
+                    <pre class="json-display"><code>${jsonFormatted}</code></pre>
                 </div>
                 <div class="prompt-actions">
-                    <button class="copy-btn copy-full" onclick="copyPrompt(this, '${encodeURIComponent(p.fullPrompt)}')">
-                        📋 Copy Full Prompt
+                    <button class="copy-btn copy-json" onclick="copyPrompt(this, '${encodeURIComponent(p.jsonString)}')">
+                        📋 Copy JSON Prompt
                     </button>
-                    <button class="copy-btn copy-condensed" onclick="copyPrompt(this, '${encodeURIComponent(p.condensedPrompt)}')">
-                        ⚡ Copy Quick Version
+                    <button class="copy-btn copy-simple" onclick="copyPrompt(this, '${encodeURIComponent(p.simplePrompt)}')">
+                        ⚡ Copy Simple Version
                     </button>
                 </div>
             `;
@@ -511,7 +478,7 @@ document.addEventListener('DOMContentLoaded', function () {
         outputSection.style.display = 'block';
         outputSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-        console.log('Prompts displayed:', prompts.length);
+        console.log('JSON Prompts displayed:', prompts.length);
     }
 
     // ===== Copy Functions =====
