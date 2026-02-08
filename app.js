@@ -1083,21 +1083,89 @@ document.addEventListener('DOMContentLoaded', function () {
                     <pre class="json-display"><code>${jsonFormatted}</code></pre>
                 </div>
                 <div class="prompt-actions">
-                    <button class="copy-btn copy-json" onclick="copyPrompt(this, '${encodeURIComponent(p.jsonString)}')">
+                    <button class="copy-btn copy-json" data-copy-type="json" data-scene="${p.sceneNumber}">
                         📋 Copy JSON Prompt
                     </button>
-                    <button class="copy-btn copy-simple" onclick="copyPrompt(this, '${encodeURIComponent(p.simplePrompt)}')">
+                    <button class="copy-btn copy-simple" data-copy-type="simple" data-scene="${p.sceneNumber}">
                         ⚡ Copy Simple Version
                     </button>
                 </div>
             `;
+
+            // Store prompt data on card element
+            card.dataset.jsonPrompt = p.jsonString;
+            card.dataset.simplePrompt = p.simplePrompt;
+
             promptsContainer.appendChild(card);
+
+            // Add click event listeners to copy buttons
+            const copyJsonBtn = card.querySelector('.copy-json');
+            const copySimpleBtn = card.querySelector('.copy-simple');
+
+            if (copyJsonBtn) {
+                copyJsonBtn.addEventListener('click', function () {
+                    handleCopyClick(this, p.jsonString);
+                });
+            }
+
+            if (copySimpleBtn) {
+                copySimpleBtn.addEventListener('click', function () {
+                    handleCopyClick(this, p.simplePrompt);
+                });
+            }
         });
 
         outputSection.style.display = 'block';
         outputSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
         console.log('JSON Prompts displayed:', prompts.length);
+    }
+
+    // Handle copy button click
+    function handleCopyClick(btn, text) {
+        // Copy to clipboard
+        navigator.clipboard.writeText(text).then(() => {
+            // Success
+            showCopySuccess(btn);
+        }).catch(err => {
+            // Fallback for older browsers
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showCopySuccess(btn);
+            } catch (e) {
+                console.error('Copy failed:', e);
+                alert('Gagal copy! Silakan copy manual.');
+            }
+            document.body.removeChild(textarea);
+        });
+    }
+
+    // Show copy success feedback
+    function showCopySuccess(btn) {
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '✓ Copied!';
+        btn.classList.add('copied');
+        btn.style.background = 'var(--success)';
+        btn.style.borderColor = 'var(--success)';
+        btn.style.color = 'white';
+
+        // Show toast
+        showToast('✅ Prompt berhasil dicopy!');
+
+        // Reset button after 2 seconds
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.classList.remove('copied');
+            btn.style.background = '';
+            btn.style.borderColor = '';
+            btn.style.color = '';
+        }, 2000);
     }
 
     // ===== Copy Functions =====
