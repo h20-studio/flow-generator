@@ -1190,6 +1190,42 @@ textarea.text-input:focus {
     letter-spacing: 0.5px;
 }
 
+/* ===== Tone Badge (for prompt cards) ===== */
+.tone-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.tone-badge.tone-comedy {
+    background: rgba(245, 158, 11, 0.2);
+    border: 1px solid #F59E0B;
+    color: #FCD34D;
+}
+
+.tone-badge.tone-serious {
+    background: rgba(99, 102, 241, 0.2);
+    border: 1px solid #6366F1;
+    color: #A5B4FC;
+}
+
+.tone-badge.tone-dramatic {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid #EF4444;
+    color: #FCA5A5;
+}
+
+.tone-badge.tone-mixed {
+    background: rgba(139, 92, 246, 0.2);
+    border: 1px solid var(--primary);
+    color: var(--primary-light);
+}
+
 .prompt-content {
     margin-bottom: 16px;
 }
@@ -1875,6 +1911,74 @@ textarea.text-input:focus {
     font-size: 12px;
     color: var(--text-muted);
     line-height: 1.4;
+}
+
+/* ===== Tone Selector (4 columns) ===== */
+.tone-selector {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.tone-card {
+    padding: 16px 12px;
+}
+
+.tone-selector .style-icon {
+    font-size: 28px;
+}
+
+.tone-selector .style-name {
+    font-size: 14px;
+}
+
+.tone-selector .style-desc {
+    font-size: 11px;
+}
+
+/* Comedy tone - special hover */
+.style-option input[value="comedy"]:checked+.style-card {
+    border-color: #F59E0B;
+    background: rgba(245, 158, 11, 0.15);
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+}
+
+/* Serious tone - special hover */
+.style-option input[value="serious"]:checked+.style-card {
+    border-color: #6366F1;
+    background: rgba(99, 102, 241, 0.15);
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+}
+
+/* Dramatic tone - special hover */
+.style-option input[value="dramatic"]:checked+.style-card {
+    border-color: #EF4444;
+    background: rgba(239, 68, 68, 0.15);
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+}
+
+/* Mixed tone - default purple */
+.style-option input[value="mixed"]:checked+.style-card {
+    border-color: var(--primary);
+    background: rgba(139, 92, 246, 0.15);
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+}
+
+@media (max-width: 768px) {
+    .tone-selector {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 400px) {
+    .tone-selector {
+        grid-template-columns: 1fr;
+    }
+
+    .tone-card {
+        flex-direction: row;
+        text-align: left;
+        gap: 12px;
+    }
 }
 
 /* ===== Custom Checkbox ===== */
