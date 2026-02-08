@@ -1913,71 +1913,169 @@ textarea.text-input:focus {
     line-height: 1.4;
 }
 
-/* ===== Tone Selector (4 columns) ===== */
+/* ===== Tone Selector (4 columns for desktop) ===== */
 .tone-selector {
     grid-template-columns: repeat(4, 1fr);
     gap: 12px;
 }
 
+.tone-selector .style-option {
+    width: 100%;
+}
+
 .tone-card {
-    padding: 16px 12px;
+    padding: 18px 10px;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .tone-selector .style-icon {
-    font-size: 28px;
+    font-size: 32px;
+    margin-bottom: 6px;
 }
 
 .tone-selector .style-name {
     font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 2px;
 }
 
 .tone-selector .style-desc {
     font-size: 11px;
+    line-height: 1.3;
+    opacity: 0.8;
 }
 
-/* Comedy tone - special hover */
-.style-option input[value="comedy"]:checked+.style-card {
+/* Comedy tone - yellow/orange */
+.style-option input[value="comedy"]:checked+.style-card,
+.style-option input[value="comedy"]:checked+.tone-card {
     border-color: #F59E0B;
     background: rgba(245, 158, 11, 0.15);
     box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
 }
 
-/* Serious tone - special hover */
-.style-option input[value="serious"]:checked+.style-card {
+/* Serious tone - indigo/blue */
+.style-option input[value="serious"]:checked+.style-card,
+.style-option input[value="serious"]:checked+.tone-card {
     border-color: #6366F1;
     background: rgba(99, 102, 241, 0.15);
     box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
 }
 
-/* Dramatic tone - special hover */
-.style-option input[value="dramatic"]:checked+.style-card {
+/* Dramatic tone - red */
+.style-option input[value="dramatic"]:checked+.style-card,
+.style-option input[value="dramatic"]:checked+.tone-card {
     border-color: #EF4444;
     background: rgba(239, 68, 68, 0.15);
     box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
 }
 
-/* Mixed tone - default purple */
-.style-option input[value="mixed"]:checked+.style-card {
+/* Mixed tone - purple (default) */
+.style-option input[value="mixed"]:checked+.style-card,
+.style-option input[value="mixed"]:checked+.tone-card {
     border-color: var(--primary);
     background: rgba(139, 92, 246, 0.15);
     box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
 }
 
-@media (max-width: 768px) {
+/* Tablet: 4 columns still but slightly smaller */
+@media (max-width: 900px) {
     .tone-selector {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+    }
+
+    .tone-card {
+        padding: 14px 8px;
+        min-height: 90px;
+    }
+
+    .tone-selector .style-icon {
+        font-size: 26px;
+    }
+
+    .tone-selector .style-name {
+        font-size: 12px;
+    }
+
+    .tone-selector .style-desc {
+        font-size: 10px;
     }
 }
 
-@media (max-width: 400px) {
+/* Mobile landscape / small tablet: 2 columns */
+@media (max-width: 768px) {
+    .tone-selector {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .tone-card {
+        padding: 16px 12px;
+        min-height: 95px;
+    }
+
+    .tone-selector .style-icon {
+        font-size: 28px;
+    }
+
+    .tone-selector .style-name {
+        font-size: 13px;
+    }
+}
+
+/* Mobile portrait: 2 columns compact */
+@media (max-width: 500px) {
+    .tone-selector {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .tone-card {
+        padding: 14px 10px;
+        min-height: 85px;
+    }
+
+    .tone-selector .style-icon {
+        font-size: 24px;
+    }
+
+    .tone-selector .style-name {
+        font-size: 12px;
+    }
+
+    .tone-selector .style-desc {
+        font-size: 10px;
+    }
+}
+
+/* Very small mobile: 1 column horizontal layout */
+@media (max-width: 360px) {
     .tone-selector {
         grid-template-columns: 1fr;
+        gap: 8px;
     }
 
     .tone-card {
         flex-direction: row;
         text-align: left;
         gap: 12px;
+        padding: 12px 14px;
+        min-height: auto;
+        justify-content: flex-start;
+    }
+
+    .tone-selector .style-icon {
+        font-size: 28px;
+        margin-bottom: 0;
+    }
+
+    .tone-card .style-name,
+    .tone-card .style-desc {
+        text-align: left;
     }
 }
 
