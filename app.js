@@ -126,22 +126,120 @@ document.addEventListener('DOMContentLoaded', function () {
     // ===== Scene Types =====
     const sceneTypes = ['Opening Shot', 'Build-up', 'Development', 'Climax', 'Closing Shot'];
 
-    // ===== Camera Movements =====
-    const cameras = [
-        'slow cinematic pan',
-        'smooth dolly shot',
-        'gentle zoom',
-        'tracking shot following movement',
-        'slow motion capture'
-    ];
+    // ===== ENHANCED Camera Movements by Narrative Tone =====
+    const camerasByTone = {
+        'comedy': [
+            'quick whip pan with comedic timing',
+            'exaggerated zoom-in on facial reaction',
+            'handheld shaky cam for chaos effect',
+            'sudden freeze frame with comedic pause',
+            'fast dolly zoom (vertigo effect) for shock comedy',
+            'snap zoom to reaction shot',
+            'dutch angle for absurd moments'
+        ],
+        'serious': [
+            'slow deliberate push-in building tension',
+            'static locked-off shot for gravity',
+            'slow crane revealing environment',
+            'intimate close-up with shallow depth',
+            'solemn tracking shot',
+            'contemplative orbital shot',
+            'low angle shot conveying authority'
+        ],
+        'dramatic': [
+            'sweeping epic crane shot',
+            'dramatic dolly zoom (Hitchcock effect)',
+            'intense close-up capturing raw emotion',
+            'slow motion hero shot',
+            'dynamic arc shot around subject',
+            'powerful low angle ascending shot',
+            'climactic push-in with rising intensity'
+        ],
+        'mixed': [
+            'versatile tracking shot adapting to mood',
+            'steadicam following action naturally',
+            'smooth dolly with emotional weight',
+            'cinematic crane revealing story',
+            'intimate handheld for authenticity',
+            'dynamic gimbal movement',
+            'artistic camera movement matching emotion'
+        ]
+    };
+
+    // Fallback cameras for backwards compatibility
+    const cameras = camerasByTone['mixed'];
+
+    // ===== NARRATIVE TONE Presets =====
+    const narrativeTones = {
+        'comedy': {
+            name: 'Comedy',
+            icon: '😂',
+            description: 'Funny, witty, absurd moments',
+            pacing: 'upbeat with sudden pauses for comedic timing',
+            elements: ['physical comedy', 'funny expressions', 'absurd situations', 'witty reactions', 'slapstick moments'],
+            transitions: ['smash cut for comedic effect', 'whip pan to reaction', 'freeze frame with record scratch']
+        },
+        'serious': {
+            name: 'Serious',
+            icon: '😐',
+            description: 'Thoughtful, contemplative, meaningful',
+            pacing: 'measured and deliberate with contemplative pauses',
+            elements: ['subtle gestures', 'meaningful glances', 'weighted silence', 'internal conflict', 'emotional depth'],
+            transitions: ['slow fade', 'dissolve with meaning', 'match cut for emphasis']
+        },
+        'dramatic': {
+            name: 'Dramatic',
+            icon: '🎭',
+            description: 'Intense, emotional, powerful',
+            pacing: 'building intensity with explosive climax',
+            elements: ['intense emotions', 'powerful confrontations', 'emotional breakdowns', 'triumphant moments', 'heart-wrenching scenes'],
+            transitions: ['dramatic slow motion', 'impactful cut to black', 'audio crescendo with visual peak']
+        },
+        'mixed': {
+            name: 'Mixed',
+            icon: '🎬',
+            description: 'Balanced mix of comedy, drama, and emotion',
+            pacing: 'dynamic rhythm alternating between tones',
+            elements: ['emotional range', 'tonal shifts', 'comedic relief', 'dramatic peaks', 'genuine moments'],
+            transitions: ['varied transitions matching mood', 'seamless tone shifts', 'motivated cuts']
+        }
+    };
+
+    // ===== STORY ARC Templates =====
+    const storyArcs = {
+        'comedy': [
+            { phase: 'setup', mood: 'normal', twist: 'something goes hilariously wrong' },
+            { phase: 'escalation', mood: 'chaotic', twist: 'situation gets absurdly worse' },
+            { phase: 'peak', mood: 'maximum chaos', twist: 'unexpected comedic resolution' },
+            { phase: 'payoff', mood: 'satisfied', twist: 'funny callback or punchline' }
+        ],
+        'serious': [
+            { phase: 'establishment', mood: 'contemplative', twist: 'underlying tension revealed' },
+            { phase: 'exploration', mood: 'deepening', twist: 'emotional truth emerges' },
+            { phase: 'confrontation', mood: 'intense', twist: 'characters face reality' },
+            { phase: 'resolution', mood: 'reflective', twist: 'meaningful conclusion' }
+        ],
+        'dramatic': [
+            { phase: 'calm before storm', mood: 'anticipation', twist: 'something shatters the peace' },
+            { phase: 'rising action', mood: 'tension building', twist: 'stakes escalate dramatically' },
+            { phase: 'climax', mood: 'explosive emotion', twist: 'emotional breakthrough or breakdown' },
+            { phase: 'aftermath', mood: 'catharsis', twist: 'transformation or acceptance' }
+        ],
+        'mixed': [
+            { phase: 'introduction', mood: 'lighthearted', twist: 'comedic moment with hint of depth' },
+            { phase: 'development', mood: 'shifting', twist: 'tone becomes more serious' },
+            { phase: 'turning point', mood: 'dramatic', twist: 'emotional revelation' },
+            { phase: 'resolution', mood: 'balanced', twist: 'ending with humor and heart' }
+        ]
+    };
 
     // ===== Time Lighting =====
     const timeLighting = {
-        'day': 'bright natural daylight',
-        'golden': 'warm golden hour lighting',
-        'night': 'atmospheric night lighting with city lights',
-        'morning': 'soft morning light',
-        'overcast': 'soft diffused light'
+        'day': 'bright natural daylight with crisp shadows',
+        'golden': 'warm golden hour lighting with lens flares',
+        'night': 'atmospheric night lighting with neon reflections',
+        'morning': 'soft ethereal morning light with gentle mist',
+        'overcast': 'moody diffused light with dramatic clouds'
     };
 
     // ===== Image Upload Handlers =====
@@ -291,8 +389,14 @@ document.addEventListener('DOMContentLoaded', function () {
         const imageStyleInput = document.querySelector('input[name="imageStyle"]:checked');
         const imageStyle = imageStyleInput ? imageStyleInput.value : 'banana';
 
+        // Get narrative tone (Comedy, Serious, Dramatic, Mixed)
+        const narrativeToneInput = document.querySelector('input[name="narrativeTone"]:checked');
+        const narrativeTone = narrativeToneInput ? narrativeToneInput.value : 'mixed';
+
         // Get no dialog text option
         const noDialogText = noDialogTextCheckbox ? noDialogTextCheckbox.checked : true;
+
+        console.log('Narrative Tone:', narrativeTone);
 
         // Generate prompts based on current tab (video or image)
         const prompts = [];
@@ -302,13 +406,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 prompt = generateImagePrompt(i, sceneCount, {
                     character, costume, location, dialogue,
                     videoTitle, secondary, speechText, timeOfDay,
-                    imageStyle, noDialogText
+                    imageStyle, noDialogText, narrativeTone
                 });
             } else {
                 prompt = generateVideoPrompt(i, sceneCount, {
                     character, costume, location, dialogue,
                     videoTitle, secondary, speechText, timeOfDay,
-                    imageStyle, noDialogText
+                    imageStyle, noDialogText, narrativeTone
                 });
             }
             prompts.push(prompt);
@@ -318,34 +422,140 @@ document.addEventListener('DOMContentLoaded', function () {
         displayPrompts(prompts, currentTab);
     }
 
-    // ===== Scene Emotions & Actions by Type =====
-    const sceneEmotions = {
-        'Opening Shot': {
-            emotions: ['calm and serene', 'curious and intrigued', 'peaceful and content', 'hopeful and excited'],
-            actions: ['standing gracefully', 'looking around with wonder', 'taking a deep breath', 'walking slowly into frame'],
-            cameraAngles: ['wide establishing shot', 'slow push-in from medium distance', 'cinematic reveal shot', 'dolly in with slight crane up']
+    // ===== ENHANCED Scene Emotions & Actions by Type AND Tone =====
+    const sceneEmotionsByTone = {
+        'comedy': {
+            'Opening Shot': {
+                emotions: ['comically confused', 'overly enthusiastic', 'hilariously oblivious', 'exaggerated wonder'],
+                actions: ['tripping slightly while walking', 'doing exaggerated double-take', 'waving awkwardly', 'striking ridiculous pose'],
+                expressions: ['wide-eyed surprise', 'goofy grin', 'raised eyebrow skepticism', 'exaggerated wink'],
+                cameraAngles: ['quick snap zoom to face', 'comedic low angle', 'whip pan entrance']
+            },
+            'Build-up': {
+                emotions: ['growing mischief', 'barely contained laughter', 'sarcastic amusement', 'playful scheming'],
+                actions: ['sneaky tiptoeing', 'exaggerated whispering', 'comedic stumbling', 'silly dance moves'],
+                expressions: ['suppressed giggle', 'mischievous smirk', 'cartoonish surprise', 'eye roll'],
+                cameraAngles: ['handheld chaos following action', 'comedic zoom-in on reaction', 'dutch angle for absurdity']
+            },
+            'Development': {
+                emotions: ['peak hilarity', 'infectious joy', 'absurd realization', 'comedic frustration'],
+                actions: ['slapstick movement', 'exaggerated reactions', 'comedic running', 'funny falling'],
+                expressions: ['belly laugh', 'shocked jaw drop', 'comedic crying', 'over-the-top excitement'],
+                cameraAngles: ['freeze frame on peak comedy', 'rapid whip pans', 'exaggerated dolly zoom']
+            },
+            'Climax': {
+                emotions: ['maximum comedic chaos', 'uncontrollable laughter', 'hilariously triumphant', 'comedic relief'],
+                actions: ['epic comedic fail', 'triumphant silly pose', 'group laughing fit', 'absurd victory dance'],
+                expressions: ['tears of laughter', 'proud but ridiculous face', 'exhausted from laughing', 'comedic satisfaction'],
+                cameraAngles: ['dramatic slow-mo of funny moment', 'hero shot with comedic twist', 'chaotic multi-cut']
+            },
+            'Closing Shot': {
+                emotions: ['satisfied silliness', 'warm humor', 'comedic contentment', 'laughing at self'],
+                actions: ['walking into sunset but trips', 'waving goodbye then walks into wall', 'final punchline delivery', 'breaking fourth wall wink'],
+                expressions: ['knowing smirk', 'satisfied grin', 'shrug with smile', 'peace sign with goofy face'],
+                cameraAngles: ['classic sitcom pull-back', 'comedic freeze-frame ending', 'whip pan to title card']
+            }
         },
-        'Build-up': {
-            emotions: ['growing excitement', 'gentle anticipation', 'warm and friendly', 'playful and lighthearted'],
-            actions: ['walking with purpose', 'gesturing expressively', 'interacting with environment', 'showing genuine interest'],
-            cameraAngles: ['medium shot following movement', 'tracking shot from the side', 'smooth dolly alongside subject', 'handheld with subtle movement']
+        'serious': {
+            'Opening Shot': {
+                emotions: ['contemplative silence', 'burdened by thoughts', 'quiet determination', 'hidden pain'],
+                actions: ['staring into distance', 'slow deliberate movement', 'touching significant object', 'taking measured breath'],
+                expressions: ['distant gaze', 'subtle frown', 'stoic composure', 'eyes holding unshed tears'],
+                cameraAngles: ['slow push-in building tension', 'static shot with weight', 'silhouette establishing shot']
+            },
+            'Build-up': {
+                emotions: ['growing unease', 'internal conflict', 'quiet desperation', 'reluctant acceptance'],
+                actions: ['pacing slowly', 'clutching hands together', 'avoiding eye contact', 'hesitant reaching out'],
+                expressions: ['furrowed brow', 'pressed lips', 'conflicted eyes', 'subtle trembling'],
+                cameraAngles: ['intimate close-up', 'over-shoulder revealing', 'dolly around subject']
+            },
+            'Development': {
+                emotions: ['emotional revelation', 'painful truth', 'deep vulnerability', 'raw honesty'],
+                actions: ['breaking composure', 'reaching out tentatively', 'letting guard down', 'confronting truth'],
+                expressions: ['tears forming', 'voice cracking', 'genuine pain', 'brave vulnerability'],
+                cameraAngles: ['extreme close-up on eyes', 'slow zoom emphasizing emotion', 'intimate two-shot']
+            },
+            'Climax': {
+                emotions: ['emotional breaking point', 'profound realization', 'cathartic release', 'painful acceptance'],
+                actions: ['emotional embrace', 'silent understanding', 'letting go', 'making difficult choice'],
+                expressions: ['tears streaming', 'bittersweet smile', 'peaceful acceptance', 'resolved determination'],
+                cameraAngles: ['held close-up allowing emotion', 'slow pull-back revealing isolation', 'match cut to meaning']
+            },
+            'Closing Shot': {
+                emotions: ['quiet resolution', 'hopeful melancholy', 'peaceful acceptance', 'contemplative hope'],
+                actions: ['walking forward with purpose', 'looking at horizon', 'releasing burden', 'small genuine smile'],
+                expressions: ['serene acceptance', 'hopeful eyes', 'gentle smile through pain', 'quiet strength'],
+                cameraAngles: ['slow crane revealing journey ahead', 'fade with atmospheric beauty', 'contemplative wide shot']
+            }
         },
-        'Development': {
-            emotions: ['deep engagement', 'genuine happiness', 'thoughtful reflection', 'warm connection'],
-            actions: ['expressing emotions through gestures', 'moving naturally and fluidly', 'reacting to surroundings', 'showing authentic body language'],
-            cameraAngles: ['close-up capturing emotion', 'over-the-shoulder shot', 'orbital shot around subject', 'push-in to emphasize moment']
+        'dramatic': {
+            'Opening Shot': {
+                emotions: ['underlying tension', 'calm before storm', 'ominous anticipation', 'simmering intensity'],
+                actions: ['dramatic entrance', 'powerful stance', 'scanning environment intently', 'clenching fists'],
+                expressions: ['steely gaze', 'determined jaw', 'fire in eyes', 'controlled intensity'],
+                cameraAngles: ['epic wide shot', 'dramatic low angle', 'slow motion entrance']
+            },
+            'Build-up': {
+                emotions: ['escalating tension', 'mounting pressure', 'fierce determination', 'passionate conviction'],
+                actions: ['confrontational approach', 'dramatic gesturing', 'powerful striding', 'intense focus'],
+                expressions: ['intense stare', 'passionate plea', 'desperate appeal', 'burning determination'],
+                cameraAngles: ['dynamic tracking shot', 'tension-building push-in', 'dramatic arc shot']
+            },
+            'Development': {
+                emotions: ['explosive emotion', 'overwhelming passion', 'desperate love', 'fierce protection'],
+                actions: ['dramatic confrontation', 'passionate declaration', 'protective stance', 'emotional breakdown'],
+                expressions: ['raw emotion pouring out', 'screaming in frustration', 'crying in anger', 'laughing through tears'],
+                cameraAngles: ['intense close-up', 'sweeping emotional crane', 'dramatic Hitchcock zoom']
+            },
+            'Climax': {
+                emotions: ['peak intensity', 'ultimate sacrifice', 'transformative moment', 'epic triumph or tragedy'],
+                actions: ['climactic embrace', 'final stand', 'ultimate confession', 'heroic action'],
+                expressions: ['all emotion on display', 'triumphant roar', 'heartbroken collapse', 'transcendent peace'],
+                cameraAngles: ['epic slow motion', 'dramatic 360 spin', 'powerful crane up', 'explosive visual moment']
+            },
+            'Closing Shot': {
+                emotions: ['earned triumph', 'bittersweet victory', 'profound change', 'epic resolution'],
+                actions: ['walking into new dawn', 'embracing loved one', 'standing victorious', 'peaceful final breath'],
+                expressions: ['transformed soul', 'battle-worn but triumphant', 'peaceful smile', 'eternal love in eyes'],
+                cameraAngles: ['majestic pull-back', 'epic sunset wide', 'fade to powerful imagery', 'cinematic conclusion']
+            }
         },
-        'Climax': {
-            emotions: ['peak emotion', 'overwhelming joy', 'profound realization', 'intense connection'],
-            actions: ['powerful emotional expression', 'meaningful gesture or movement', 'climactic action', 'turning point moment'],
-            cameraAngles: ['dramatic close-up', 'slow motion capture', 'dynamic crane shot', 'impactful dolly zoom']
-        },
-        'Closing Shot': {
-            emotions: ['satisfied and peaceful', 'nostalgic warmth', 'hopeful for future', 'content and fulfilled'],
-            actions: ['walking away gracefully', 'looking back with smile', 'embracing the moment', 'fading into the scene'],
-            cameraAngles: ['wide pull-back shot', 'slow crane up and away', 'fade with soft focus', 'cinematic ending pullout']
+        'mixed': {
+            'Opening Shot': {
+                emotions: ['lighthearted curiosity', 'playful anticipation', 'genuine warmth', 'subtle excitement'],
+                actions: ['casual entrance', 'natural movement', 'friendly gesture', 'relaxed walking'],
+                expressions: ['warm smile', 'curious eyes', 'genuine expression', 'natural charm'],
+                cameraAngles: ['balanced medium shot', 'natural dolly', 'engaging push-in']
+            },
+            'Build-up': {
+                emotions: ['playful banter', 'growing connection', 'hints of deeper feeling', 'fun moments'],
+                actions: ['playful interaction', 'genuine laughter', 'tender moment', 'comedic mishap'],
+                expressions: ['infectious laugh', 'surprised delight', 'touched expression', 'amused smirk'],
+                cameraAngles: ['dynamic but controlled', 'intimate when needed', 'playful movement']
+            },
+            'Development': {
+                emotions: ['emotional depth emerging', 'vulnerable moment', 'genuine connection', 'touching realization'],
+                actions: ['opening up', 'sharing truth', 'supporting each other', 'emotional breakthrough'],
+                expressions: ['real tears with humor', 'genuine emotion', 'bittersweet smile', 'touched by kindness'],
+                cameraAngles: ['sensitive close-up', 'emotional two-shot', 'meaningful framing']
+            },
+            'Climax': {
+                emotions: ['powerful emotion with levity', 'dramatic but grounded', 'triumphant joy', 'heartfelt resolution'],
+                actions: ['emotional embrace', 'triumphant moment', 'tears of joy', 'celebratory action'],
+                expressions: ['laughing while crying', 'pure joy', 'overwhelming gratitude', 'complete happiness'],
+                cameraAngles: ['dynamic emotional shot', 'joyful movement', 'celebratory framing']
+            },
+            'Closing Shot': {
+                emotions: ['warm satisfaction', 'hopeful future', 'content happiness', 'perfect ending'],
+                actions: ['walking together', 'looking at future', 'final laugh together', 'peaceful moment'],
+                expressions: ['genuine contentment', 'warm love', 'grateful smile', 'peaceful joy'],
+                cameraAngles: ['beautiful pull-back', 'warm sunset shot', 'hopeful wide', 'perfect closure']
+            }
         }
     };
+
+    // Fallback for backwards compatibility
+    const sceneEmotions = sceneEmotionsByTone['mixed'];
 
     // ===== Visual Styles =====
     const visualStyles = [
@@ -470,12 +680,45 @@ document.addEventListener('DOMContentLoaded', function () {
                 connectionStyle: "genuine and natural"
             } : null,
             noTextInImage: noDialogText,
+            // STRICT CONSISTENCY RULES
             consistency: {
                 maintainIdentity: true,
                 preserveAppearance: true,
                 singleCharacterReference: true,
-                uniqueFeatures: true
+                uniqueFeatures: true,
+                // Character consistency
+                characterRules: {
+                    sameface: "maintain exact same facial features across all images",
+                    samebody: "consistent body type and proportions",
+                    sameClothing: costume ? `always wearing exactly: ${costume}` : "consistent clothing style",
+                    sameHair: "identical hairstyle, color, and length",
+                    sameAge: "consistent apparent age throughout"
+                },
+                // Visual consistency
+                visualRules: {
+                    colorPalette: "maintain consistent color palette across series",
+                    lightingStyle: "consistent lighting direction and quality",
+                    artStyle: `consistent ${imageStyle === 'gpt' ? 'artistic stylized' : 'photorealistic cinematic'} rendering`
+                }
             },
+            // TITLE/THEME CONSISTENCY - Must match the given title
+            titleConsistency: videoTitle ? {
+                strictAdherence: true,
+                title: videoTitle,
+                requirement: `ALL scenes MUST directly relate to and visualize: "${videoTitle}"`,
+                maintainTheme: "every image must clearly represent the title theme",
+                noDeviation: "do not add unrelated elements or change the story context",
+                visualConnection: "visual elements must support and enhance the title narrative"
+            } : null,
+            // STRICT INSTRUCTIONS
+            strictInstructions: [
+                "CRITICAL: Generate EXACTLY what is described, no creative interpretation",
+                "MAINTAIN identical character appearance in every single image",
+                "FOLLOW the title/theme precisely without deviation",
+                "PRESERVE costume, hairstyle, and physical features consistently",
+                "DO NOT change character's identity or appearance between scenes",
+                "EACH image must logically connect to the title and story context"
+            ],
             avoid: avoidList
         };
 
@@ -487,16 +730,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const jsonString = JSON.stringify(cleanJSON, null, 2);
 
-        // Simple prompt for images
+        // Simple prompt for images - with strict consistency
         const styleLabel = imageStyle === 'gpt' ? 'GPT artistic style' : 'Banana cinematic style';
         let simplePrompt = `[IMAGE - ${styleLabel}] ${character}`;
-        if (costume) simplePrompt += `, wearing ${costume}`;
+        if (costume) simplePrompt += `, ALWAYS wearing ${costume}`;
         if (location) simplePrompt += `, ${location}`;
         simplePrompt += `. ${composition}, ${lighting}`;
         if (dialogue) simplePrompt += `, ${dialogue}`;
-        if (videoTitle) simplePrompt += `. Theme: ${videoTitle}`;
+        if (videoTitle) simplePrompt += `. STRICT THEME: "${videoTitle}" - all images MUST match this title exactly`;
         if (noDialogText) simplePrompt += '. NO TEXT IN IMAGE.';
-        simplePrompt += ' High resolution, professional quality.';
+        simplePrompt += '. CONSISTENCY: Maintain EXACT same character face, body, hair, clothing in every image. Generate EXACTLY what title describes. No creative deviation. High resolution, professional quality.';
 
         return {
             sceneNumber: index + 1,
@@ -512,7 +755,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ===== Generate Video Prompt (for video scenes) =====
     function generateVideoPrompt(index, total, data) {
-        const { character, costume, location, dialogue, videoTitle, secondary, speechText, timeOfDay, imageStyle, noDialogText } = data;
+        const { character, costume, location, dialogue, videoTitle, secondary, speechText, timeOfDay, imageStyle, noDialogText, narrativeTone = 'mixed' } = data;
 
         // Determine scene type
         let sceneType;
@@ -528,10 +771,28 @@ document.addEventListener('DOMContentLoaded', function () {
                 index < total * 0.3 ? 'Build-up' :
                     index < total * 0.7 ? 'Development' : 'Climax';
 
-        const sceneData = sceneEmotions[sceneTypeKey];
+        // Get tone-specific scene data
+        const toneData = sceneEmotionsByTone[narrativeTone] || sceneEmotionsByTone['mixed'];
+        const sceneData = toneData[sceneTypeKey];
+
+        // Get narrative tone info
+        const toneInfo = narrativeTones[narrativeTone] || narrativeTones['mixed'];
+
+        // Get tone-specific cameras
+        const toneCameras = camerasByTone[narrativeTone] || camerasByTone['mixed'];
+
+        // Get story arc phase
+        const storyArc = storyArcs[narrativeTone] || storyArcs['mixed'];
+        const arcPhase = storyArc[Math.min(index, storyArc.length - 1)];
+
+        // Get emotion, action, expression, camera based on tone
         const emotion = sceneData.emotions[index % sceneData.emotions.length];
         const action = sceneData.actions[index % sceneData.actions.length];
+        const expression = sceneData.expressions ? sceneData.expressions[index % sceneData.expressions.length] : 'natural expression';
         const cameraAngle = sceneData.cameraAngles[index % sceneData.cameraAngles.length];
+        const cameraMovement = toneCameras[index % toneCameras.length];
+        const transition = toneInfo.transitions[index % toneInfo.transitions.length];
+
         const lighting = timeLighting[timeOfDay] || 'natural lighting';
 
         // Get style preset based on selection
@@ -562,6 +823,20 @@ document.addEventListener('DOMContentLoaded', function () {
             );
         }
 
+        // Add audio quality items to avoid - always include for clear audio
+        avoidList.push(
+            "audio noise",
+            "static sounds",
+            "muffled dialogue",
+            "unclear speech",
+            "audio distortion",
+            "echo artifacts",
+            "background hiss",
+            "clipping audio",
+            "unbalanced audio levels",
+            "overpowering background music"
+        );
+
         // Build JSON structure safe for Google Flow Veo 3 VIDEO
         const jsonPrompt = {
             video: {
@@ -569,6 +844,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 total: total,
                 type: sceneType,
                 sceneType: sceneTypeKey
+            },
+            narrativeTone: {
+                type: toneInfo.name,
+                icon: toneInfo.icon,
+                pacing: toneInfo.pacing,
+                elements: toneInfo.elements.slice(0, 3)
+            },
+            storyArc: {
+                phase: arcPhase.phase,
+                mood: arcPhase.mood,
+                twist: arcPhase.twist
             },
             renderStyle: {
                 type: imageStyle === 'gpt' ? 'GPT Artistic' : 'Banana Cinematic',
@@ -580,6 +866,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 appearance: costume ? `wearing ${costume}` : null,
                 physicalDetails: stylePreset.skin,
                 emotionalState: emotion,
+                facialExpression: expression,
                 action: action
             },
             visualStyle: {
@@ -598,23 +885,55 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             camera: {
                 shotType: cameraAngle,
-                movement: cameras[index % cameras.length],
+                movement: cameraMovement,
                 focus: "sharp focus on subject",
                 framing: "rule of thirds composition"
+            },
+            sceneTransition: {
+                type: transition,
+                timing: toneInfo.pacing
             },
             audio: speechText ? {
                 dialogue: speechText,
                 lipSync: true,
-                voiceTone: "natural and clear",
-                timing: "natural speech rhythm"
+                voiceTone: narrativeTone === 'comedy' ? "playful and comedic" :
+                    narrativeTone === 'serious' ? "measured and thoughtful" :
+                        narrativeTone === 'dramatic' ? "intense and emotional" : "natural and expressive",
+                timing: "natural speech rhythm",
+                voiceQuality: {
+                    clarity: "crystal clear voice recording",
+                    noiseReduction: "completely noise-free audio",
+                    volume: "balanced and audible",
+                    articulation: "clear pronunciation without mumbling"
+                }
             } : {
                 type: "ambient",
                 breathing: "visible natural breathing",
                 environment: "scene-appropriate sounds"
             },
+            audioQuality: {
+                overallQuality: "professional studio-quality audio",
+                noiseLevel: "zero background noise or static",
+                mixing: "properly balanced audio levels",
+                backsound: {
+                    type: narrativeTone === 'comedy' ? "upbeat lighthearted background music" :
+                        narrativeTone === 'serious' ? "subtle emotional ambient score" :
+                            narrativeTone === 'dramatic' ? "powerful cinematic orchestral score" : "mood-matching background music",
+                    volume: "background music softer than dialogue",
+                    quality: "high fidelity without distortion",
+                    noInterference: "music does not overpower speech"
+                },
+                dialogueClarity: {
+                    priority: "dialogue always clear and understandable",
+                    separation: "voice isolated from background noise",
+                    consistency: "consistent voice volume throughout",
+                    noEcho: "no reverb or echo artifacts"
+                }
+            },
             context: videoTitle ? {
                 narrative: videoTitle,
-                storyRole: sceneType
+                storyRole: sceneType,
+                emotionalGoal: arcPhase.mood
             } : null,
             additionalSubjects: secondary ? {
                 description: secondary,
@@ -622,16 +941,56 @@ document.addEventListener('DOMContentLoaded', function () {
             } : null,
             interaction: dialogue ? {
                 type: dialogue,
-                connectionStyle: "genuine and natural"
+                connectionStyle: narrativeTone === 'comedy' ? "playful and funny" :
+                    narrativeTone === 'serious' ? "meaningful and deep" :
+                        narrativeTone === 'dramatic' ? "intense and passionate" : "genuine and natural"
             } : null,
             noTextInImage: noDialogText,
+            // STRICT CONSISTENCY RULES FOR VIDEO
             consistency: {
                 maintainIdentity: true,
                 preserveAppearance: true,
                 singleCharacterReference: true,
                 noCloning: true,
-                uniqueFeatures: true
+                uniqueFeatures: true,
+                // Character consistency across all video scenes
+                characterRules: {
+                    sameface: "maintain EXACT same facial features in EVERY frame",
+                    samebody: "consistent body type and proportions throughout video",
+                    sameClothing: costume ? `always wearing exactly: ${costume}` : "consistent clothing in all scenes",
+                    sameHair: "identical hairstyle, color, and length - no changes",
+                    sameVoice: "consistent voice tone and speaking style",
+                    sameAge: "consistent apparent age throughout all scenes"
+                },
+                // Visual consistency
+                visualRules: {
+                    colorPalette: "maintain consistent color grading across all scenes",
+                    lightingContinuity: "consistent lighting direction between cuts",
+                    artStyle: `consistent ${imageStyle === 'gpt' ? 'artistic stylized' : 'photorealistic cinematic'} rendering`,
+                    cameraStyle: "consistent camera quality and film look"
+                }
             },
+            // TITLE/THEME CONSISTENCY - CRITICAL
+            titleConsistency: videoTitle ? {
+                strictAdherence: true,
+                title: videoTitle,
+                requirement: `EVERY scene MUST directly visualize and relate to: "${videoTitle}"`,
+                maintainTheme: "all scenes must clearly represent the title narrative",
+                noDeviation: "absolutely no unrelated elements or story changes",
+                visualConnection: "every visual element must support the title story",
+                sceneConnection: "each scene logically connects to form cohesive story matching title"
+            } : null,
+            // STRICT VIDEO INSTRUCTIONS
+            strictInstructions: [
+                "CRITICAL: Generate EXACTLY what the title describes",
+                "MAINTAIN 100% identical character appearance in EVERY scene",
+                "FOLLOW the story/title precisely - no creative deviation",
+                "PRESERVE costume, hairstyle, face, and body consistently",
+                "CHARACTER MUST look like the SAME person in all scenes",
+                "EACH scene must logically continue the title's story",
+                "NO morphing, aging, or appearance changes between scenes",
+                "SAME character identity from scene 1 to final scene"
+            ],
             avoid: avoidList
         };
 
@@ -644,23 +1003,28 @@ document.addEventListener('DOMContentLoaded', function () {
         // Create formatted JSON string
         const jsonString = JSON.stringify(cleanJSON, null, 2);
 
-        // Create a simple text version for quick copy
+        // Create a simple text version for quick copy - with strict consistency
         const styleLabel = imageStyle === 'gpt' ? 'GPT artistic style' : 'Banana cinematic style';
-        let simplePrompt = `[VIDEO - ${styleLabel}] ${character}`;
-        if (costume) simplePrompt += `, wearing ${costume}`;
+        const toneLabel = toneInfo.name.toUpperCase();
+        let simplePrompt = `[VIDEO - ${styleLabel} - ${toneLabel} TONE] ${character}`;
+        if (costume) simplePrompt += `, ALWAYS wearing ${costume}`;
         if (location) simplePrompt += `, ${location}`;
-        simplePrompt += `. ${cameraAngle}, ${lighting}, ${emotion}, ${action}`;
-        if (dialogue) simplePrompt += `, ${dialogue}`;
-        if (speechText) simplePrompt += `. Speaking: "${speechText}"`;
-        if (videoTitle) simplePrompt += `. Context: ${videoTitle}`;
+        simplePrompt += `. ${cameraAngle} with ${cameraMovement}`;
+        simplePrompt += `. Expression: ${expression}, Emotion: ${emotion}, Action: ${action}`;
+        simplePrompt += `. Story Arc: ${arcPhase.phase} (${arcPhase.mood})`;
+        if (dialogue) simplePrompt += `. Interaction: ${dialogue}`;
+        if (speechText) simplePrompt += `. Speaking clearly: "${speechText}"`;
+        if (videoTitle) simplePrompt += `. STRICT STORY: "${videoTitle}" - EVERY scene MUST follow this title exactly`;
         if (noDialogText) simplePrompt += '. NO TEXT OR DIALOG IN VIDEO.';
-        simplePrompt += ' Maintain character consistency throughout.';
+        simplePrompt += `. AUDIO: Crystal clear dialogue without noise, professional studio quality, balanced background music.`;
+        simplePrompt += ` CRITICAL CONSISTENCY: Same EXACT character face, body, hair, clothing in ALL scenes. Generate EXACTLY what title describes. NO deviation. ${toneInfo.pacing}.`;
 
         return {
             sceneNumber: index + 1,
             sceneType: sceneTypeKey,
             promptType: 'video',
             imageStyle: imageStyle,
+            narrativeTone: narrativeTone,
             jsonPrompt: cleanJSON,
             jsonString: jsonString,
             simplePrompt: simplePrompt,
@@ -701,10 +1065,17 @@ document.addEventListener('DOMContentLoaded', function () {
             const typeBadge = p.promptType === 'image' ? '🖼️ Image' : '🎬 Video';
             const typeLabel = p.promptType === 'image' ? 'Image' : 'Scene';
 
+            // Get tone badge based on narrativeTone
+            const toneIcons = { comedy: '😂', serious: '😐', dramatic: '🎭', mixed: '🎬' };
+            const toneNames = { comedy: 'Comedy', serious: 'Serious', dramatic: 'Dramatic', mixed: 'Mixed' };
+            const toneBadge = toneIcons[p.narrativeTone] || '🎬';
+            const toneName = toneNames[p.narrativeTone] || 'Mixed';
+
             card.innerHTML = `
                 <div class="prompt-header">
                     <span class="scene-badge">${typeBadge} ${p.sceneNumber}</span>
                     <span class="scene-type">${p.sceneType}</span>
+                    <span class="tone-badge tone-${p.narrativeTone || 'mixed'}">${toneBadge} ${toneName}</span>
                     <span class="style-badge">${styleBadge}</span>
                     <span class="format-badge">JSON</span>
                 </div>
