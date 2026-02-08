@@ -1293,31 +1293,77 @@ textarea.text-input:focus {
 }
 
 .copy-btn {
-    display: flex;
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
-    padding: 10px 18px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text-secondary);
-    font-size: 13px;
-    font-weight: 500;
+    padding: 12px 20px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 600;
     font-family: inherit;
     cursor: pointer;
     transition: var(--transition);
+    position: relative;
+    z-index: 10;
+    pointer-events: auto;
 }
 
 .copy-btn:hover {
     background: var(--success);
     border-color: var(--success);
     color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.copy-btn:active {
+    transform: translateY(0);
 }
 
 .copy-btn.copied {
     background: var(--success);
     border-color: var(--success);
     color: white;
+}
+
+/* Copy button variations */
+.copy-btn.copy-json {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.1));
+    border-color: var(--primary);
+}
+
+.copy-btn.copy-json:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.copy-btn.copy-simple {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Prompt Actions Container */
+.prompt-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+}
+
+@media (max-width: 500px) {
+    .prompt-actions {
+        flex-direction: column;
+    }
+
+    .copy-btn {
+        width: 100%;
+        justify-content: center;
+    }
 }
 
 /* ===== Enhanced Prompt Display ===== */
