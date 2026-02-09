@@ -592,8 +592,134 @@ document.addEventListener('DOMContentLoaded', function () {
         'centered composition with symmetrical balance',
         'golden ratio spiral leading to subject',
         'diagonal composition creating dynamic tension',
-        'framing composition using environmental elements'
+        'framing composition using environmental elements',
+        'leading lines guiding to subject',
+        'negative space emphasis composition',
+        'triangular composition for stability',
+        'L-shaped composition with dynamic balance',
+        'radial composition from center point'
     ];
+
+    // ===== Image Pose Variations =====
+    const imagePoses = [
+        'standing confidently with relaxed posture',
+        'sitting elegantly with natural grace',
+        'leaning casually against a surface',
+        'walking with purposeful stride',
+        'looking over shoulder with intrigue',
+        'arms crossed with confident stance',
+        'hand touching face thoughtfully',
+        'reaching out with expressive gesture',
+        'kneeling with gentle presence',
+        'dancing with fluid movement',
+        'running with dynamic energy',
+        'jumping with joyful expression',
+        'stretching with relaxed form',
+        'crouching with intense focus',
+        'twirling with graceful motion',
+        'lying down with peaceful repose',
+        'climbing with determined effort',
+        'bending with curious inspection',
+        'floating with ethereal lightness',
+        'embracing with warm affection'
+    ];
+
+    // ===== Image Expression Variations =====
+    const imageExpressions = [
+        'genuine warm smile with sparkling eyes',
+        'mysterious smirk with knowing gaze',
+        'contemplative look with distant focus',
+        'excited expression with wide eyes',
+        'serene peaceful expression',
+        'playful grin with mischievous eyes',
+        'intense focused stare',
+        'surprised expression with raised eyebrows',
+        'dreamy look with soft gaze',
+        'confident determined expression',
+        'gentle caring smile',
+        'curious tilted head expression',
+        'laughing with pure joy',
+        'thoughtful frown with deep consideration',
+        'shy subtle smile with downcast eyes',
+        'fierce intense expression',
+        'wistful nostalgic look',
+        'proud satisfied expression',
+        'enchanted wonder-filled gaze',
+        'calm composed demeanor'
+    ];
+
+    // ===== Image Camera Angle Variations =====
+    const imageCameraAngles = [
+        'eye-level straight-on angle',
+        'slight low angle for heroic presence',
+        'high angle looking down softly',
+        'dutch angle for dynamic tension',
+        'profile view with elegant silhouette',
+        'three-quarter view with depth',
+        'close-up portrait shot',
+        'medium shot showing upper body',
+        'full body shot with environment',
+        'over-the-shoulder perspective',
+        'worms eye view dramatic angle',
+        'birds eye view from above',
+        'extreme close-up on face details',
+        'wide establishing shot',
+        'intimate close framing'
+    ];
+
+    // ===== Image Mood Variations =====
+    const imageMoods = [
+        'warm and inviting atmosphere',
+        'cool and mysterious ambiance',
+        'vibrant and energetic vibe',
+        'calm and tranquil feeling',
+        'dramatic and intense mood',
+        'romantic and dreamy atmosphere',
+        'adventurous and exciting energy',
+        'melancholic yet beautiful',
+        'ethereal and otherworldly',
+        'nostalgic vintage feeling',
+        'fresh and modern aesthetic',
+        'dark and moody atmosphere',
+        'bright and cheerful mood',
+        'sophisticated elegant ambiance',
+        'playful and whimsical vibe'
+    ];
+
+    // ===== Atmospheric Detail Variations =====
+    const atmosphericDetails = [
+        'soft bokeh lights in background',
+        'gentle mist adding depth',
+        'floating particles catching light',
+        'lens flare adding cinematic touch',
+        'dramatic shadows and highlights',
+        'soft diffused natural light',
+        'rim lighting creating silhouette edge',
+        'dappled light through leaves',
+        'reflections on wet surfaces',
+        'steam or smoke adding mystery',
+        'sparkles and light effects',
+        'rain drops creating texture',
+        'sunset glow painting scene',
+        'moonlight casting silver tones',
+        'neon glow from ambient sources',
+        'fire light flickering warmth',
+        'snow falling gently',
+        'dust motes in light beam',
+        'aurora colors in sky',
+        'city lights twinkling background'
+    ];
+
+    // ===== Helper function to get random element =====
+    function getRandomElement(array) {
+        return array[Math.floor(Math.random() * array.length)];
+    }
+
+    // ===== Helper function to shuffle and get unique elements =====
+    function getRandomUniqueElements(array, count) {
+        const shuffled = [...array].sort(() => Math.random() - 0.5);
+        return shuffled.slice(0, Math.min(count, array.length));
+    }
 
     // ===== Generate Image Prompt (for static images) =====
     function generateImagePrompt(index, total, data) {
@@ -601,7 +727,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const lighting = timeLighting[timeOfDay] || 'natural lighting';
         const stylePreset = imageStylePresets[imageStyle] || imageStylePresets['banana'];
-        const composition = imageCompositions[index % imageCompositions.length];
+
+        // Use RANDOM variations for each image to make them unique
+        const composition = getRandomElement(imageCompositions);
+        const pose = getRandomElement(imagePoses);
+        const expression = getRandomElement(imageExpressions);
+        const cameraAngle = getRandomElement(imageCameraAngles);
+        const mood = getRandomElement(imageMoods);
+        const atmosphericDetail = getRandomElement(atmosphericDetails);
+
+        // Get additional random atmospheric details for more variety
+        const extraAtmosphericDetails = getRandomUniqueElements(atmosphericDetails, 2);
 
         // Build avoid list for images
         const avoidList = [
@@ -628,12 +764,13 @@ document.addEventListener('DOMContentLoaded', function () {
             );
         }
 
-        // Build JSON structure for IMAGE generation
+        // Build JSON structure for IMAGE generation with RANDOM variations
         const jsonPrompt = {
             image: {
                 number: index + 1,
                 total: total,
-                type: "static image"
+                type: "static image",
+                variationSeed: Math.random().toString(36).substring(7) // Unique seed for variation
             },
             renderStyle: {
                 type: imageStyle === 'gpt' ? 'GPT Artistic' : 'Banana Cinematic',
@@ -644,40 +781,79 @@ document.addEventListener('DOMContentLoaded', function () {
                 description: character,
                 appearance: costume ? `wearing ${costume}` : null,
                 physicalDetails: stylePreset.skin,
-                pose: "natural and expressive pose",
-                expression: "genuine emotional expression"
+                pose: pose,
+                expression: expression,
+                action: getRandomElement(['subtle movement', 'dynamic pose', 'natural stance', 'expressive gesture', 'engaged posture'])
+            },
+            cameraWork: {
+                angle: cameraAngle,
+                movement: getRandomElement(['static shot', 'slight drift', 'gentle follow', 'focused capture']),
+                framing: getRandomElement(['tight framing', 'medium framing', 'loose framing', 'creative framing'])
             },
             visualStyle: {
                 quality: stylePreset.quality,
                 colorGrading: stylePreset.colorGrading,
-                depthOfField: "professional bokeh with sharp subject focus",
+                depthOfField: getRandomElement([
+                    'professional bokeh with sharp subject focus',
+                    'shallow depth with dreamy background blur',
+                    'medium depth with contextual background',
+                    'deep focus showing full environment',
+                    'selective focus on key details'
+                ]),
                 resolution: "4K ultra high definition",
                 details: stylePreset.details
             },
             composition: {
                 type: composition,
-                framing: "professional portrait framing",
-                perspective: "eye-level natural perspective",
+                framing: getRandomElement([
+                    'professional portrait framing',
+                    'environmental portrait framing',
+                    'artistic asymmetric framing',
+                    'dynamic action framing',
+                    'intimate close framing'
+                ]),
+                perspective: cameraAngle,
                 aspectRatio: "16:9 or 4:3"
             },
             environment: {
                 setting: location || "contextual background",
                 timeOfDay: timeOfDay,
                 lighting: `${lighting}, ${stylePreset.lighting}`,
-                atmosphere: "natural ambient with environmental depth"
+                atmosphere: mood,
+                atmosphericEffects: [atmosphericDetail, ...extraAtmosphericDetails],
+                ambiance: getRandomElement([
+                    'peaceful serene setting',
+                    'dynamic energetic environment',
+                    'mysterious atmospheric scene',
+                    'warm inviting space',
+                    'dramatic intense backdrop'
+                ])
             },
             context: videoTitle ? {
                 narrative: videoTitle,
-                mood: "matching visual mood"
+                mood: mood,
+                emotionalTone: getRandomElement(['uplifting', 'contemplative', 'exciting', 'romantic', 'mysterious', 'dramatic', 'peaceful'])
             } : null,
             additionalSubjects: secondary ? {
                 description: secondary,
                 uniqueAppearance: true,
-                positioning: "natural placement in scene"
+                positioning: getRandomElement([
+                    'natural placement in scene',
+                    'complementary positioning',
+                    'background presence',
+                    'interactive placement',
+                    'supporting role position'
+                ])
             } : null,
             interaction: dialogue ? {
                 type: dialogue,
-                connectionStyle: "genuine and natural"
+                connectionStyle: getRandomElement([
+                    'genuine and natural',
+                    'playful and light',
+                    'intense and focused',
+                    'tender and caring',
+                    'dynamic and energetic'
+                ])
             } : null,
             noTextInImage: noDialogText,
             // STRICT CONSISTENCY RULES
@@ -717,7 +893,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 "FOLLOW the title/theme precisely without deviation",
                 "PRESERVE costume, hairstyle, and physical features consistently",
                 "DO NOT change character's identity or appearance between scenes",
-                "EACH image must logically connect to the title and story context"
+                "EACH image must logically connect to the title and story context",
+                "USE the specific pose, expression, and camera angle provided for variety"
             ],
             avoid: avoidList
         };
@@ -730,16 +907,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const jsonString = JSON.stringify(cleanJSON, null, 2);
 
-        // Simple prompt for images - with strict consistency
+        // Simple prompt for images - with variations and strict consistency
         const styleLabel = imageStyle === 'gpt' ? 'GPT artistic style' : 'Banana cinematic style';
-        let simplePrompt = `[IMAGE - ${styleLabel}] ${character}`;
-        if (costume) simplePrompt += `, ALWAYS wearing ${costume}`;
-        if (location) simplePrompt += `, ${location}`;
-        simplePrompt += `. ${composition}, ${lighting}`;
-        if (dialogue) simplePrompt += `, ${dialogue}`;
-        if (videoTitle) simplePrompt += `. STRICT THEME: "${videoTitle}" - all images MUST match this title exactly`;
+        let simplePrompt = `[IMAGE ${index + 1} - ${styleLabel}] ${character}`;
+        if (costume) simplePrompt += `, wearing ${costume}`;
+        simplePrompt += `. POSE: ${pose}. EXPRESSION: ${expression}. CAMERA: ${cameraAngle}`;
+        if (location) simplePrompt += `. LOCATION: ${location}`;
+        simplePrompt += `. COMPOSITION: ${composition}. LIGHTING: ${lighting}. MOOD: ${mood}. ATMOSPHERE: ${atmosphericDetail}`;
+        if (dialogue) simplePrompt += `. ACTION: ${dialogue}`;
+        if (videoTitle) simplePrompt += `. THEME: "${videoTitle}"`;
         if (noDialogText) simplePrompt += '. NO TEXT IN IMAGE.';
-        simplePrompt += '. CONSISTENCY: Maintain EXACT same character face, body, hair, clothing in every image. Generate EXACTLY what title describes. No creative deviation. High resolution, professional quality.';
+        simplePrompt += '. CONSISTENCY: Same character identity throughout. High resolution, professional quality.';
 
         return {
             sceneNumber: index + 1,
@@ -977,233 +1155,4 @@ document.addEventListener('DOMContentLoaded', function () {
                 requirement: `EVERY scene MUST directly visualize and relate to: "${videoTitle}"`,
                 maintainTheme: "all scenes must clearly represent the title narrative",
                 noDeviation: "absolutely no unrelated elements or story changes",
-                visualConnection: "every visual element must support the title story",
-                sceneConnection: "each scene logically connects to form cohesive story matching title"
-            } : null,
-            // STRICT VIDEO INSTRUCTIONS
-            strictInstructions: [
-                "CRITICAL: Generate EXACTLY what the title describes",
-                "MAINTAIN 100% identical character appearance in EVERY scene",
-                "FOLLOW the story/title precisely - no creative deviation",
-                "PRESERVE costume, hairstyle, face, and body consistently",
-                "CHARACTER MUST look like the SAME person in all scenes",
-                "EACH scene must logically continue the title's story",
-                "NO morphing, aging, or appearance changes between scenes",
-                "SAME character identity from scene 1 to final scene"
-            ],
-            avoid: avoidList
-        };
-
-        // Clean JSON - remove null values
-        const cleanJSON = JSON.parse(JSON.stringify(jsonPrompt, (key, value) => {
-            if (value === null || value === undefined) return undefined;
-            return value;
-        }));
-
-        // Create formatted JSON string
-        const jsonString = JSON.stringify(cleanJSON, null, 2);
-
-        // Create a simple text version for quick copy - with strict consistency
-        const styleLabel = imageStyle === 'gpt' ? 'GPT artistic style' : 'Banana cinematic style';
-        const toneLabel = toneInfo.name.toUpperCase();
-        let simplePrompt = `[VIDEO - ${styleLabel} - ${toneLabel} TONE] ${character}`;
-        if (costume) simplePrompt += `, ALWAYS wearing ${costume}`;
-        if (location) simplePrompt += `, ${location}`;
-        simplePrompt += `. ${cameraAngle} with ${cameraMovement}`;
-        simplePrompt += `. Expression: ${expression}, Emotion: ${emotion}, Action: ${action}`;
-        simplePrompt += `. Story Arc: ${arcPhase.phase} (${arcPhase.mood})`;
-        if (dialogue) simplePrompt += `. Interaction: ${dialogue}`;
-        if (speechText) simplePrompt += `. Speaking clearly: "${speechText}"`;
-        if (videoTitle) simplePrompt += `. STRICT STORY: "${videoTitle}" - EVERY scene MUST follow this title exactly`;
-        if (noDialogText) simplePrompt += '. NO TEXT OR DIALOG IN VIDEO.';
-        simplePrompt += `. AUDIO: Crystal clear dialogue without noise, professional studio quality, balanced background music.`;
-        simplePrompt += ` CRITICAL CONSISTENCY: Same EXACT character face, body, hair, clothing in ALL scenes. Generate EXACTLY what title describes. NO deviation. ${toneInfo.pacing}.`;
-
-        return {
-            sceneNumber: index + 1,
-            sceneType: sceneTypeKey,
-            promptType: 'video',
-            imageStyle: imageStyle,
-            narrativeTone: narrativeTone,
-            jsonPrompt: cleanJSON,
-            jsonString: jsonString,
-            simplePrompt: simplePrompt,
-            fullPrompt: jsonString
-        };
-    }
-
-    // ===== Display Prompts (JSON Format) =====
-    function displayPrompts(prompts, tabType) {
-        if (!promptsContainer || !outputSection) {
-            console.error('Output elements not found');
-            return;
-        }
-
-        promptsContainer.innerHTML = '';
-
-        // Display JSON prompt cards per scene
-        prompts.forEach((p) => {
-            const card = document.createElement('div');
-            card.className = 'prompt-card';
-
-            // Format JSON with syntax highlighting
-            const jsonFormatted = p.jsonString
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"([^"]+)":/g, '<span class="json-key">"$1"</span>:')
-                .replace(/: "([^"]+)"/g, ': <span class="json-string">"$1"</span>')
-                .replace(/: (\d+)/g, ': <span class="json-number">$1</span>')
-                .replace(/: (true|false)/g, ': <span class="json-boolean">$1</span>')
-                .replace(/\n/g, '<br>')
-                .replace(/  /g, '&nbsp;&nbsp;');
-
-            // Get style badge
-            const styleBadge = p.imageStyle === 'gpt' ? '🤖 GPT' : '🍌 Banana';
-
-            // Get type badge based on promptType
-            const typeBadge = p.promptType === 'image' ? '🖼️ Image' : '🎬 Video';
-            const typeLabel = p.promptType === 'image' ? 'Image' : 'Scene';
-
-            // Get tone badge based on narrativeTone
-            const toneIcons = { comedy: '😂', serious: '😐', dramatic: '🎭', mixed: '🎬' };
-            const toneNames = { comedy: 'Comedy', serious: 'Serious', dramatic: 'Dramatic', mixed: 'Mixed' };
-            const toneBadge = toneIcons[p.narrativeTone] || '🎬';
-            const toneName = toneNames[p.narrativeTone] || 'Mixed';
-
-            card.innerHTML = `
-                <div class="prompt-header">
-                    <span class="scene-badge">${typeBadge} ${p.sceneNumber}</span>
-                    <span class="scene-type">${p.sceneType}</span>
-                    <span class="tone-badge tone-${p.narrativeTone || 'mixed'}">${toneBadge} ${toneName}</span>
-                    <span class="style-badge">${styleBadge}</span>
-                    <span class="format-badge">JSON</span>
-                </div>
-                <div class="prompt-content">
-                    <pre class="json-display"><code>${jsonFormatted}</code></pre>
-                </div>
-                <div class="prompt-actions">
-                    <button class="copy-btn copy-json" data-copy-type="json" data-scene="${p.sceneNumber}">
-                        📋 Copy JSON Prompt
-                    </button>
-                    <button class="copy-btn copy-simple" data-copy-type="simple" data-scene="${p.sceneNumber}">
-                        ⚡ Copy Simple Version
-                    </button>
-                </div>
-            `;
-
-            // Store prompt data on card element
-            card.dataset.jsonPrompt = p.jsonString;
-            card.dataset.simplePrompt = p.simplePrompt;
-
-            promptsContainer.appendChild(card);
-
-            // Add click event listeners to copy buttons
-            const copyJsonBtn = card.querySelector('.copy-json');
-            const copySimpleBtn = card.querySelector('.copy-simple');
-
-            if (copyJsonBtn) {
-                copyJsonBtn.addEventListener('click', function () {
-                    handleCopyClick(this, p.jsonString);
-                });
-            }
-
-            if (copySimpleBtn) {
-                copySimpleBtn.addEventListener('click', function () {
-                    handleCopyClick(this, p.simplePrompt);
-                });
-            }
-        });
-
-        outputSection.style.display = 'block';
-        outputSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-        console.log('JSON Prompts displayed:', prompts.length);
-    }
-
-    // Handle copy button click
-    function handleCopyClick(btn, text) {
-        // Copy to clipboard
-        navigator.clipboard.writeText(text).then(() => {
-            // Success
-            showCopySuccess(btn);
-        }).catch(err => {
-            // Fallback for older browsers
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            textarea.style.position = 'fixed';
-            textarea.style.opacity = '0';
-            document.body.appendChild(textarea);
-            textarea.select();
-            try {
-                document.execCommand('copy');
-                showCopySuccess(btn);
-            } catch (e) {
-                console.error('Copy failed:', e);
-                alert('Gagal copy! Silakan copy manual.');
-            }
-            document.body.removeChild(textarea);
-        });
-    }
-
-    // Show copy success feedback
-    function showCopySuccess(btn) {
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '✓ Copied!';
-        btn.classList.add('copied');
-        btn.style.background = 'var(--success)';
-        btn.style.borderColor = 'var(--success)';
-        btn.style.color = 'white';
-
-        // Show toast
-        showToast('✅ Prompt berhasil dicopy!');
-
-        // Reset button after 2 seconds
-        setTimeout(() => {
-            btn.innerHTML = originalText;
-            btn.classList.remove('copied');
-            btn.style.background = '';
-            btn.style.borderColor = '';
-            btn.style.color = '';
-        }, 2000);
-    }
-
-    // ===== Copy Functions =====
-    function copyToClipboard(text) {
-        navigator.clipboard.writeText(text).then(() => {
-            console.log('Copied to clipboard');
-        }).catch(err => {
-            console.error('Copy failed:', err);
-            // Fallback
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-        });
-    }
-
-    function showToast(message) {
-        if (!toast) return;
-        const msgEl = document.getElementById('toastMessage');
-        if (msgEl) msgEl.textContent = message;
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 2000);
-    }
-
-    // Make copyPrompt global for inline onclick
-    window.copyPrompt = function (btn, encodedPrompt) {
-        const text = decodeURIComponent(encodedPrompt);
-        copyToClipboard(text);
-        btn.textContent = '✓ Copied!';
-        btn.classList.add('copied');
-        setTimeout(() => {
-            btn.textContent = '📋 Copy';
-            btn.classList.remove('copied');
-        }, 2000);
-        showToast('Prompt copied!');
-    };
-
-    console.log('FlowPrompt ready!');
-});
+                visualConnection: "every visual element 
