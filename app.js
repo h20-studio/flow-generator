@@ -396,7 +396,14 @@ document.addEventListener('DOMContentLoaded', function () {
         // Get no dialog text option
         const noDialogText = noDialogTextCheckbox ? noDialogTextCheckbox.checked : true;
 
+        // Check if reference images are uploaded
+        const hasReferenceImage1 = imageInput1 && imageInput1.files && imageInput1.files.length > 0;
+        const hasReferenceImage2 = imageInput2 && imageInput2.files && imageInput2.files.length > 0;
+        const hasReferenceImage = hasReferenceImage1 || hasReferenceImage2;
+        const referenceImageCount = (hasReferenceImage1 ? 1 : 0) + (hasReferenceImage2 ? 1 : 0);
+
         console.log('Narrative Tone:', narrativeTone);
+        console.log('Reference Images:', { hasReferenceImage1, hasReferenceImage2, hasReferenceImage });
 
         // Generate prompts based on current tab (video or image)
         const prompts = [];
@@ -406,13 +413,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 prompt = generateImagePrompt(i, sceneCount, {
                     character, costume, location, dialogue,
                     videoTitle, secondary, speechText, timeOfDay,
-                    imageStyle, noDialogText, narrativeTone
+                    imageStyle, noDialogText, narrativeTone,
+                    hasReferenceImage, referenceImageCount
                 });
             } else {
                 prompt = generateVideoPrompt(i, sceneCount, {
                     character, costume, location, dialogue,
                     videoTitle, secondary, speechText, timeOfDay,
-                    imageStyle, noDialogText, narrativeTone
+                    imageStyle, noDialogText, narrativeTone,
+                    hasReferenceImage, referenceImageCount
                 });
             }
             prompts.push(prompt);
@@ -723,7 +732,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ===== Generate Image Prompt (for static images) =====
     function generateImagePrompt(index, total, data) {
-        const { character, costume, location, dialogue, videoTitle, secondary, speechText, timeOfDay, imageStyle, noDialogText } = data;
+        const { character, costume, location, dialogue, videoTitle, secondary, speechText, timeOfDay, imageStyle, noDialogText, hasReferenceImage = false, referenceImageCount = 0 } = data;
 
         const lighting = timeLighting[timeOfDay] || 'natural lighting';
         const stylePreset = imageStylePresets[imageStyle] || imageStylePresets['banana'];
@@ -856,18 +865,35 @@ document.addEventListener('DOMContentLoaded', function () {
                 ])
             } : null,
             noTextInImage: noDialogText,
+            // REFERENCE IMAGE ADHERENCE - CRITICAL when user uploads reference
+            referenceImage: hasReferenceImage ? {
+                provided: true,
+                count: referenceImageCount,
+                priority: "HIGHEST - Reference image takes absolute priority over all text descriptions",
+                adherence: "STRICT - Must match the uploaded reference image EXACTLY",
+                rules: [
+                    "COPY the EXACT face, body, and features from reference image",
+                    "IGNORE any conflicting text descriptions - reference image is truth",
+                    "Character must be IDENTICAL to reference in every output",
+                    "Hair color, style, facial features, skin tone MUST match reference",
+                    "Body proportions and build MUST match reference exactly",
+                    "DO NOT add, remove, or change ANY features from reference"
+                ],
+                warning: "VIOLATION: Generating a different person than the reference is UNACCEPTABLE"
+            } : null,
             // STRICT CONSISTENCY RULES
             consistency: {
                 maintainIdentity: true,
                 preserveAppearance: true,
                 singleCharacterReference: true,
                 uniqueFeatures: true,
+                referenceImageFirst: hasReferenceImage,
                 // Character consistency
                 characterRules: {
-                    sameface: "maintain exact same facial features across all images",
-                    samebody: "consistent body type and proportions",
+                    sameface: hasReferenceImage ? "MUST match reference image face EXACTLY - no deviation" : "maintain exact same facial features across all images",
+                    samebody: hasReferenceImage ? "MUST match reference image body EXACTLY" : "consistent body type and proportions",
                     sameClothing: costume ? `always wearing exactly: ${costume}` : "consistent clothing style",
-                    sameHair: "identical hairstyle, color, and length",
+                    sameHair: hasReferenceImage ? "MUST match reference image hair EXACTLY - color, style, length" : "identical hairstyle, color, and length",
                     sameAge: "consistent apparent age throughout"
                 },
                 // Visual consistency
@@ -887,7 +913,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 visualConnection: "visual elements must support and enhance the title narrative"
             } : null,
             // STRICT INSTRUCTIONS
-            strictInstructions: [
+            strictInstructions: hasReferenceImage ? [
+                "⚠️ CRITICAL: REFERENCE IMAGE PROVIDED - This is the PRIMARY source of truth",
+                "⚠️ MUST generate the EXACT SAME person as shown in reference image",
+                "⚠️ Face, body, hair, skin - ALL must match reference PERFECTLY",
+                "⚠️ DO NOT interpret or modify - COPY the reference exactly",
+                "⚠️ Any deviation from reference image is FAILURE",
+                "MAINTAIN identical character appearance in every single image",
+                "PRESERVE costume, hairstyle, and physical features consistently",
+                "USE the specific pose, expression, and camera angle for variety ONLY"
+            ] : [
                 "CRITICAL: Generate EXACTLY what is described, no creative interpretation",
                 "MAINTAIN identical character appearance in every single image",
                 "FOLLOW the title/theme precisely without deviation",
@@ -917,6 +952,9 @@ document.addEventListener('DOMContentLoaded', function () {
         if (dialogue) simplePrompt += `. ACTION: ${dialogue}`;
         if (videoTitle) simplePrompt += `. THEME: "${videoTitle}"`;
         if (noDialogText) simplePrompt += '. NO TEXT IN IMAGE.';
+        if (hasReferenceImage) {
+            simplePrompt += '. ⚠️ REFERENCE IMAGE PROVIDED - MUST match reference EXACTLY. Copy the EXACT face, body, hair, features from reference. DO NOT generate a different person. Reference image is the PRIMARY source of truth.';
+        }
         simplePrompt += '. CONSISTENCY: Same character identity throughout. High resolution, professional quality.';
 
         return {
@@ -933,7 +971,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ===== Generate Video Prompt (for video scenes) =====
     function generateVideoPrompt(index, total, data) {
-        const { character, costume, location, dialogue, videoTitle, secondary, speechText, timeOfDay, imageStyle, noDialogText, narrativeTone = 'mixed' } = data;
+        const { character, costume, location, dialogue, videoTitle, secondary, speechText, timeOfDay, imageStyle, noDialogText, narrativeTone = 'mixed', hasReferenceImage = false, referenceImageCount = 0 } = data;
 
         // Determine scene type
         let sceneType;
@@ -1124,6 +1162,23 @@ document.addEventListener('DOMContentLoaded', function () {
                         narrativeTone === 'dramatic' ? "intense and passionate" : "genuine and natural"
             } : null,
             noTextInImage: noDialogText,
+            // REFERENCE IMAGE ADHERENCE - CRITICAL when user uploads reference
+            referenceImage: hasReferenceImage ? {
+                provided: true,
+                count: referenceImageCount,
+                priority: "HIGHEST - Reference image takes absolute priority over all text descriptions",
+                adherence: "STRICT - Must match the uploaded reference image EXACTLY in every frame",
+                rules: [
+                    "COPY the EXACT face, body, and features from reference image",
+                    "IGNORE any conflicting text descriptions - reference image is truth",
+                    "Character must be IDENTICAL to reference in EVERY frame of video",
+                    "Hair color, style, facial features, skin tone MUST match reference",
+                    "Body proportions and build MUST match reference exactly",
+                    "DO NOT add, remove, or change ANY features from reference",
+                    "Character in video MUST be recognizable as the reference person"
+                ],
+                warning: "VIOLATION: Generating a different person than the reference is UNACCEPTABLE"
+            } : null,
             // STRICT CONSISTENCY RULES FOR VIDEO
             consistency: {
                 maintainIdentity: true,
@@ -1131,12 +1186,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 singleCharacterReference: true,
                 noCloning: true,
                 uniqueFeatures: true,
+                referenceImageFirst: hasReferenceImage,
                 // Character consistency across all video scenes
                 characterRules: {
-                    sameface: "maintain EXACT same facial features in EVERY frame",
-                    samebody: "consistent body type and proportions throughout video",
+                    sameface: hasReferenceImage ? "MUST match reference image face EXACTLY in every frame" : "maintain EXACT same facial features in EVERY frame",
+                    samebody: hasReferenceImage ? "MUST match reference image body EXACTLY" : "consistent body type and proportions throughout video",
                     sameClothing: costume ? `always wearing exactly: ${costume}` : "consistent clothing in all scenes",
-                    sameHair: "identical hairstyle, color, and length - no changes",
+                    sameHair: hasReferenceImage ? "MUST match reference image hair EXACTLY - color, style, length" : "identical hairstyle, color, and length - no changes",
                     sameVoice: "consistent voice tone and speaking style",
                     sameAge: "consistent apparent age throughout all scenes"
                 },
@@ -1159,7 +1215,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 sceneConnection: "each scene logically connects to form cohesive story matching title"
             } : null,
             // STRICT VIDEO INSTRUCTIONS
-            strictInstructions: [
+            strictInstructions: hasReferenceImage ? [
+                "⚠️ CRITICAL: REFERENCE IMAGE PROVIDED - This is the PRIMARY source of truth",
+                "⚠️ MUST generate the EXACT SAME person as shown in reference image in EVERY frame",
+                "⚠️ Face, body, hair, skin - ALL must match reference PERFECTLY throughout video",
+                "⚠️ DO NOT interpret or modify - COPY the reference exactly",
+                "⚠️ Any deviation from reference image is FAILURE",
+                "MAINTAIN 100% identical character appearance in EVERY scene",
+                "PRESERVE costume, hairstyle, face, and body consistently",
+                "NO morphing, aging, or appearance changes between scenes"
+            ] : [
                 "CRITICAL: Generate EXACTLY what the title describes",
                 "MAINTAIN 100% identical character appearance in EVERY scene",
                 "FOLLOW the story/title precisely - no creative deviation",
@@ -1195,6 +1260,9 @@ document.addEventListener('DOMContentLoaded', function () {
         if (videoTitle) simplePrompt += `. STRICT STORY: "${videoTitle}" - EVERY scene MUST follow this title exactly`;
         if (noDialogText) simplePrompt += '. NO TEXT OR DIALOG IN VIDEO.';
         simplePrompt += `. AUDIO: Crystal clear dialogue without noise, professional studio quality, balanced background music.`;
+        if (hasReferenceImage) {
+            simplePrompt += ` ⚠️ REFERENCE IMAGE PROVIDED - MUST match reference EXACTLY in every frame. Copy the EXACT face, body, hair, features from reference. DO NOT generate a different person. Reference image is the PRIMARY source of truth.`;
+        }
         simplePrompt += ` CRITICAL CONSISTENCY: Same EXACT character face, body, hair, clothing in ALL scenes. Generate EXACTLY what title describes. NO deviation. ${toneInfo.pacing}.`;
 
         return {
