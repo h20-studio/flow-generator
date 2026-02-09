@@ -1155,4 +1155,233 @@ document.addEventListener('DOMContentLoaded', function () {
                 requirement: `EVERY scene MUST directly visualize and relate to: "${videoTitle}"`,
                 maintainTheme: "all scenes must clearly represent the title narrative",
                 noDeviation: "absolutely no unrelated elements or story changes",
-                visualConnection: "every visual element 
+                visualConnection: "every visual element must support the title story",
+                sceneConnection: "each scene logically connects to form cohesive story matching title"
+            } : null,
+            // STRICT VIDEO INSTRUCTIONS
+            strictInstructions: [
+                "CRITICAL: Generate EXACTLY what the title describes",
+                "MAINTAIN 100% identical character appearance in EVERY scene",
+                "FOLLOW the story/title precisely - no creative deviation",
+                "PRESERVE costume, hairstyle, face, and body consistently",
+                "CHARACTER MUST look like the SAME person in all scenes",
+                "EACH scene must logically continue the title's story",
+                "NO morphing, aging, or appearance changes between scenes",
+                "SAME character identity from scene 1 to final scene"
+            ],
+            avoid: avoidList
+        };
+
+        // Clean JSON - remove null values
+        const cleanJSON = JSON.parse(JSON.stringify(jsonPrompt, (key, value) => {
+            if (value === null || value === undefined) return undefined;
+            return value;
+        }));
+
+        // Create formatted JSON string
+        const jsonString = JSON.stringify(cleanJSON, null, 2);
+
+        // Create a simple text version for quick copy - with strict consistency
+        const styleLabel = imageStyle === 'gpt' ? 'GPT artistic style' : 'Banana cinematic style';
+        const toneLabel = toneInfo.name.toUpperCase();
+        let simplePrompt = `[VIDEO - ${styleLabel} - ${toneLabel} TONE] ${character}`;
+        if (costume) simplePrompt += `, ALWAYS wearing ${costume}`;
+        if (location) simplePrompt += `, ${location}`;
+        simplePrompt += `. ${cameraAngle} with ${cameraMovement}`;
+        simplePrompt += `. Expression: ${expression}, Emotion: ${emotion}, Action: ${action}`;
+        simplePrompt += `. Story Arc: ${arcPhase.phase} (${arcPhase.mood})`;
+        if (dialogue) simplePrompt += `. Interaction: ${dialogue}`;
+        if (speechText) simplePrompt += `. Speaking clearly: "${speechText}"`;
+        if (videoTitle) simplePrompt += `. STRICT STORY: "${videoTitle}" - EVERY scene MUST follow this title exactly`;
+        if (noDialogText) simplePrompt += '. NO TEXT OR DIALOG IN VIDEO.';
+        simplePrompt += `. AUDIO: Crystal clear dialogue without noise, professional studio quality, balanced background music.`;
+        simplePrompt += ` CRITICAL CONSISTENCY: Same EXACT character face, body, hair, clothing in ALL scenes. Generate EXACTLY what title describes. NO deviation. ${toneInfo.pacing}.`;
+
+        return {
+            sceneNumber: index + 1,
+            sceneType: sceneTypeKey,
+            promptType: 'video',
+            imageStyle: imageStyle,
+            narrativeTone: narrativeTone,
+            jsonPrompt: cleanJSON,
+            jsonString: jsonString,
+            simplePrompt: simplePrompt,
+            fullPrompt: jsonString
+        };
+    }
+
+    // ===== Display Prompts (JSON Format) =====
+    function displayPrompts(prompts, tabType) {
+        if (!promptsContainer || !outputSection) {
+            console.error('Output elements not found');
+            return;
+        }
+
+        promptsContainer.innerHTML = '';
+
+        // Display JSON prompt cards per scene
+        prompts.forEach((p) => {
+            const card = document.createElement('div');
+            card.className = 'prompt-card';
+
+            // Format JSON with syntax highlighting
+            const jsonFormatted = p.jsonString
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"([^"]+)":/g, '<span class="json-key">"$1"</span>:')
+                .replace(/: "([^"]+)"/g, ': <span class="json-string">"$1"</span>')
+                .replace(/: (\d+)/g, ': <span class="json-number">$1</span>')
+                .replace(/: (true|false)/g, ': <span class="json-boolean">$1</span>')
+                .replace(/\n/g, '<br>')
+                .replace(/  /g, '&nbsp;&nbsp;');
+
+            // Get style badge
+            const styleBadge = p.imageStyle === 'gpt' ? '🤖 GPT' : '🍌 Banana';
+
+            // Get type badge based on promptType
+            const typeBadge = p.promptType === 'image' ? '🖼️ Image' : '🎬 Video';
+            const typeLabel = p.promptType === 'image' ? 'Image' : 'Scene';
+
+            // Get tone badge based on narrativeTone
+            const toneIcons = { comedy: '😂', serious: '😐', dramatic: '🎭', mixed: '🎬' };
+            const toneNames = { comedy: 'Comedy', serious: 'Serious', dramatic: 'Dramatic', mixed: 'Mixed' };
+            const toneBadge = toneIcons[p.narrativeTone] || '🎬';
+            const toneName = toneNames[p.narrativeTone] || 'Mixed';
+
+            card.innerHTML = `
+                <div class="prompt-header">
+                    <span class="scene-badge">${typeBadge} ${p.sceneNumber}</span>
+                    <span class="scene-type">${p.sceneType}</span>
+                    <span class="tone-badge tone-${p.narrativeTone || 'mixed'}">${toneBadge} ${toneName}</span>
+                    <span class="style-badge">${styleBadge}</span>
+                    <span class="format-badge">JSON</span>
+                </div>
+                <div class="prompt-content">
+                    <pre class="json-display"><code>${jsonFormatted}</code></pre>
+                </div>
+                <div class="prompt-actions">
+                    <button class="copy-btn copy-json" data-copy-type="json" data-scene="${p.sceneNumber}">
+                        📋 Copy JSON Prompt
+                    </button>
+                    <button class="copy-btn copy-simple" data-copy-type="simple" data-scene="${p.sceneNumber}">
+                        ⚡ Copy Simple Version
+                    </button>
+                </div>
+            `;
+
+            // Store prompt data on card element
+            card.dataset.jsonPrompt = p.jsonString;
+            card.dataset.simplePrompt = p.simplePrompt;
+
+            promptsContainer.appendChild(card);
+
+            // Add click event listeners to copy buttons
+            const copyJsonBtn = card.querySelector('.copy-json');
+            const copySimpleBtn = card.querySelector('.copy-simple');
+
+            if (copyJsonBtn) {
+                copyJsonBtn.addEventListener('click', function () {
+                    handleCopyClick(this, p.jsonString);
+                });
+            }
+
+            if (copySimpleBtn) {
+                copySimpleBtn.addEventListener('click', function () {
+                    handleCopyClick(this, p.simplePrompt);
+                });
+            }
+        });
+
+        outputSection.style.display = 'block';
+        outputSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        console.log('JSON Prompts displayed:', prompts.length);
+    }
+
+    // Handle copy button click
+    function handleCopyClick(btn, text) {
+        // Copy to clipboard
+        navigator.clipboard.writeText(text).then(() => {
+            // Success
+            showCopySuccess(btn);
+        }).catch(err => {
+            // Fallback for older browsers
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showCopySuccess(btn);
+            } catch (e) {
+                console.error('Copy failed:', e);
+                alert('Gagal copy! Silakan copy manual.');
+            }
+            document.body.removeChild(textarea);
+        });
+    }
+
+    // Show copy success feedback
+    function showCopySuccess(btn) {
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '✓ Copied!';
+        btn.classList.add('copied');
+        btn.style.background = 'var(--success)';
+        btn.style.borderColor = 'var(--success)';
+        btn.style.color = 'white';
+
+        // Show toast
+        showToast('✅ Prompt berhasil dicopy!');
+
+        // Reset button after 2 seconds
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.classList.remove('copied');
+            btn.style.background = '';
+            btn.style.borderColor = '';
+            btn.style.color = '';
+        }, 2000);
+    }
+
+    // ===== Copy Functions =====
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            console.log('Copied to clipboard');
+        }).catch(err => {
+            console.error('Copy failed:', err);
+            // Fallback
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+        });
+    }
+
+    function showToast(message) {
+        if (!toast) return;
+        const msgEl = document.getElementById('toastMessage');
+        if (msgEl) msgEl.textContent = message;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
+    // Make copyPrompt global for inline onclick
+    window.copyPrompt = function (btn, encodedPrompt) {
+        const text = decodeURIComponent(encodedPrompt);
+        copyToClipboard(text);
+        btn.textContent = '✓ Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+            btn.textContent = '📋 Copy';
+            btn.classList.remove('copied');
+        }, 2000);
+        showToast('Prompt copied!');
+    };
+
+    console.log('FlowPrompt ready!');
+});
